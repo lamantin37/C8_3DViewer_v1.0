@@ -66,7 +66,8 @@ void MainWindow::open_object_file(QVBoxLayout* layout, QLineEdit* lineEdit, QPus
         object->addComponent(material);
         Qt3DCore::QTransform *transform = new Qt3DCore::QTransform();
         object->addComponent(transform);
-        object_info(layout, mesh, filename);
+//        object_info(layout, mesh, filename);
+        add_scale_slider(layout, transform);
         add_move_sliders(layout, transform);
         add_rotate_sliders(layout, transform);
     });
@@ -201,5 +202,18 @@ void MainWindow::object_info(QVBoxLayout* layout, Qt3DRender::QMesh *mesh, QStri
     layout->addWidget(object_inf);
 }
 
+void MainWindow::add_scale_slider(QVBoxLayout* layout, Qt3DCore::QTransform * transform) {
+    QSlider* scaleObject = new QSlider(Qt::Horizontal, this);
+    QLabel* scaleObjectLabel = new QLabel("Scale object");
+    scaleObjectLabel->setMaximumSize(150, 20);
+    layout->addWidget(scaleObjectLabel);
+    scaleObject->setRange(1, 100);
+    scaleObject->setValue(10);
+    layout->addWidget(scaleObject);
+    connect(scaleObject, &QSlider::valueChanged, this, [=]() {
+        float scale = scaleObject->value();
+        transform->setScale(scale);
+    });
+}
 
 MainWindow::~MainWindow() { delete ui; }
