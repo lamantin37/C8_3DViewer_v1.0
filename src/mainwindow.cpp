@@ -42,21 +42,14 @@ MainWindow::MainWindow(QWidget *parent)
   cameraController->setLookSpeed(100.0f);  // Скорость вращения
   cameraController->setLinearSpeed(50.0f); // Линейная скорость
 
-  Qt3DCore::QEntity *lightEntity = new Qt3DCore::QEntity(rootWin);
-  Qt3DRender::QPointLight *light = new Qt3DRender::QPointLight(lightEntity);
-  light->setColor("white");
-  light->setIntensity(10);
-  lightEntity->addComponent(light);
-  Qt3DCore::QTransform *lightTransform = new Qt3DCore::QTransform(lightEntity);
-  lightTransform->setTranslation(QVector3D(40, 0, 20));
-  lightEntity->addComponent(lightTransform);
+    Qt3DCore::QEntity *object = new Qt3DCore::QEntity(rootWin);
 
   // открытие файла и его загрузка
-  open_object_file(layout, lineEdit, button);
-  settings(layout);
+  open_object_file(object, layout, lineEdit, button);
+  settings(view, object, layout);
 }
 
-void MainWindow::open_object_file(QVBoxLayout *layout, QLineEdit *lineEdit,
+void MainWindow::open_object_file(Qt3DCore::QEntity* object, QVBoxLayout *layout, QLineEdit *lineEdit,
                                   QPushButton *button) {
 
   connect(button, &QPushButton::clicked, this, [=]() {
@@ -71,7 +64,6 @@ void MainWindow::open_object_file(QVBoxLayout *layout, QLineEdit *lineEdit,
                                                // каркаса
     Qt3DExtras::QPerVertexColorMaterial *material =
         new Qt3DExtras::QPerVertexColorMaterial(rootWin);
-    Qt3DCore::QEntity *object = new Qt3DCore::QEntity(rootWin);
     object->addComponent(mesh);
     object->addComponent(material);
     Qt3DCore::QTransform *transform = new Qt3DCore::QTransform();
@@ -252,12 +244,14 @@ void MainWindow::add_scale_slider(QVBoxLayout *layout,
   });
 }
 
-void MainWindow::settings(QVBoxLayout *layout) {
+void MainWindow::settings(Qt3DExtras::Qt3DWindow * view, Qt3DCore::QEntity* object, QVBoxLayout *layout) {
     QPushButton *settingsButton = new QPushButton("Settings", this);
     layout->addWidget(settingsButton);
     connect(settingsButton, &QPushButton::clicked, this,
             [=]() {
         projection_settings(layout);
+        edges_settings(object, layout);
+        background_settings(view, layout);
             });
 }
 
@@ -274,6 +268,17 @@ void MainWindow::projection_settings(QVBoxLayout *layout) {
     float aspectRatio = float(window()->width()) / window()->height();
     connect(centralProjection, &QPushButton::clicked, this, [=]() {
         cameraObj->lens()->setOrthographicProjection(-aspectRatio, aspectRatio, -1.0, 1.0, 0.1f, 10000.0f);
+    });
+}
+
+void MainWindow::background_settings(Qt3DExtras::Qt3DWindow *view, QVBoxLayout * layout) {
+    QPushButton *backgroundColor = new QPushButton("Change background color", this);
+    layout->addWidget(backgroundColor);
+    connect(backgroundColor, &QPushButton::clicked, this, [=]() {
+        QColor color = QColorDialog::getColor(Qt::white, this, "Choose background color");
+        if (color.isValid()) {
+            view->defaultFrameGraph()->setClearColor(QColor(color));
+        }
     });
 }
 

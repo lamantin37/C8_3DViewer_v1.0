@@ -13,6 +13,8 @@
 #include <Qt3DCore>
 #include <Qt3DExtras>
 #include <Qt3DRender>
+#include <QColor>
+#include <QColorDialog>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,17 +28,17 @@ class MainWindow : public QMainWindow {
 public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
-  void open_object_file(QVBoxLayout *, QLineEdit *, QPushButton *);
+  void open_object_file(Qt3DCore::QEntity*, QVBoxLayout *, QLineEdit *, QPushButton *);
   void add_move_sliders(QVBoxLayout *, Qt3DCore::QTransform *);
   void add_rotate_sliders(QVBoxLayout *, Qt3DCore::QTransform *);
   void add_scale_slider(QVBoxLayout *, Qt3DCore::QTransform *);
   void object_info(QVBoxLayout *layout, Qt3DRender::QMesh *mesh,
                    const QString &filename);
-  void settings(QVBoxLayout *);
+  void settings(Qt3DExtras::Qt3DWindow *, Qt3DCore::QEntity*, QVBoxLayout *);
   void projection_settings(QVBoxLayout *);
-  void edges_settings(QVBoxLayout *);
+  void edges_settings(Qt3DCore::QEntity*, QVBoxLayout *);
   void vertecies_settings(QVBoxLayout *);
-  void background_settings(QVBoxLayout *);
+  void background_settings(Qt3DExtras::Qt3DWindow *, QVBoxLayout *);
   void record();
 
 private:
@@ -45,5 +47,6 @@ private:
   Qt3DRender::QCamera *cameraObj = nullptr; // камера
   Qt3DCore::QEntity *sceneLoader = nullptr; // базовая сущность
   Qt3DRender::QSceneLoader *loader = nullptr; // для загрузки файлов
+
 };
 #endif // MAINWINDOW_H
