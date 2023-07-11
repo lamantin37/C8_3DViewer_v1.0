@@ -1,18 +1,18 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QFileDialog>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
 #include <QMainWindow>
+#include <QMesh>
+#include <QPushButton>
 #include <QScreen>
+#include <QSlider>
 #include <Qt3DCore>
 #include <Qt3DExtras>
 #include <Qt3DRender>
-#include <QMesh>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QFileDialog>
-#include <QHBoxLayout>
-#include <QSlider>
-#include <QLabel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,11 +26,18 @@ class MainWindow : public QMainWindow {
 public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
-  void open_object_file(QVBoxLayout*, QLineEdit*, QPushButton*);
-  void add_move_sliders(QVBoxLayout*, Qt3DCore::QTransform *);
-  void add_rotate_sliders(QVBoxLayout*, Qt3DCore::QTransform *);
-  void add_scale_slider(QVBoxLayout*, Qt3DCore::QTransform *);
-  void object_info(QVBoxLayout*, Qt3DRender::QMesh *, QString);
+  void open_object_file(QVBoxLayout *, QLineEdit *, QPushButton *);
+  void add_move_sliders(QVBoxLayout *, Qt3DCore::QTransform *);
+  void add_rotate_sliders(QVBoxLayout *, Qt3DCore::QTransform *);
+  void add_scale_slider(QVBoxLayout *, Qt3DCore::QTransform *);
+  void object_info(QVBoxLayout *layout, Qt3DRender::QMesh *mesh,
+                   const QString &filename);
+  void settings(QVBoxLayout *);
+  void projection_settings(QVBoxLayout *);
+  void edges_settings(QVBoxLayout *);
+  void vertecies_settings(QVBoxLayout *);
+  void background_settings(QVBoxLayout *);
+  void record();
 
 private:
   Ui::MainWindow *ui;
