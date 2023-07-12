@@ -3,6 +3,30 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
+  moveX = new QSlider(Qt::Horizontal, this);
+  moveZ = new QSlider(Qt::Horizontal, this);
+  moveY = new QSlider(Qt::Horizontal, this);
+  moveXlabel = new QLabel("X-axis movement", this);
+  moveYlabel = new QLabel("Y-axis movement", this);
+  moveZlabel = new QLabel("Z-axis movement", this);
+  showSlidersButton = new QPushButton("Move object", this);
+
+  rotateX = new QSlider(Qt::Horizontal, this);
+  rotateY = new QSlider(Qt::Horizontal, this);
+  rotateZ = new QSlider(Qt::Horizontal, this);
+  rotateXlabel = new QLabel("X-axis rotation", this);
+  rotateYlabel = new QLabel("Y-axis rotation", this);
+  rotateZlabel = new QLabel("Z-axis rotation", this);
+  showSlidersButton2 = new QPushButton("Rotate object", this);
+
+  scaleObject = new QSlider(Qt::Horizontal, this);
+  scaleObjectLabel = new QLabel("Scale object");
+
+  settingsButton = new QPushButton("Settings", this);
+  parallelProjection = new QPushButton("Central projection", this);
+  centralProjection = new QPushButton("Parallel projection", this);
+  backgroundColor = new QPushButton("Change background color", this);
+
   ui->setupUi(this);
   rootWin = new Qt3DCore::QEntity(); // конктруктор корневого окна
   rootWin->setObjectName("Root window");
@@ -42,8 +66,7 @@ MainWindow::MainWindow(QWidget *parent)
   cameraController->setLookSpeed(100.0f);  // Скорость вращения
   cameraController->setLinearSpeed(50.0f); // Линейная скорость
 
-    Qt3DCore::QEntity *object = new Qt3DCore::QEntity(rootWin);
-
+  object = new Qt3DCore::QEntity(rootWin);
   // открытие файла и его загрузка
   open_object_file(object, layout, lineEdit, button);
   settings(view, object, layout);
@@ -56,17 +79,21 @@ void MainWindow::open_object_file(Qt3DCore::QEntity* object, QVBoxLayout *layout
     QString filename = QFileDialog::getOpenFileName(this, "Open a file", "",
                                                     "Obj Files (*.obj)");
     lineEdit->setText(filename);
-
-    Qt3DRender::QMesh *mesh = new Qt3DRender::QMesh(rootWin);
+    if (mesh != nullptr) {
+        object->removeComponent(mesh);
+        delete mesh;
+    }
+    mesh = new Qt3DRender::QMesh(rootWin);
     mesh->setSource(QUrl::fromLocalFile(filename));
     mesh->setPrimitiveType(
         Qt3DRender::QGeometryRenderer::Lines); // Установка режима отображения
                                                // каркаса
     Qt3DExtras::QPerVertexColorMaterial *material =
         new Qt3DExtras::QPerVertexColorMaterial(rootWin);
+
     object->addComponent(mesh);
     object->addComponent(material);
-    Qt3DCore::QTransform *transform = new Qt3DCore::QTransform();
+    transform = new Qt3DCore::QTransform();
     object->addComponent(transform);
     add_scale_slider(layout, transform);
     add_move_sliders(layout, transform);
@@ -77,21 +104,9 @@ void MainWindow::open_object_file(Qt3DCore::QEntity* object, QVBoxLayout *layout
 
 void MainWindow::add_move_sliders(QVBoxLayout *layout,
                                   Qt3DCore::QTransform *transform) {
-  QSlider *moveX = new QSlider(Qt::Horizontal, this);
-  QSlider *moveY = new QSlider(Qt::Horizontal, this);
-  QSlider *moveZ = new QSlider(Qt::Horizontal, this);
-  QLabel *moveXlabel = new QLabel("X-axis movement", this);
-  QLabel *moveYlabel = new QLabel("Y-axis movement", this);
-  QLabel *moveZlabel = new QLabel("Z-axis movement", this);
   moveXlabel->setMaximumSize(150, 15);
   moveYlabel->setMaximumSize(150, 15);
   moveZlabel->setMaximumSize(150, 15);
-  moveX->setVisible(false);
-  moveY->setVisible(false);
-  moveZ->setVisible(false);
-  moveXlabel->setVisible(false);
-  moveYlabel->setVisible(false);
-  moveZlabel->setVisible(false);
 
   moveX->setRange(-100, 100); // задаем диапазон слайдера
   moveX->setTickInterval(1); // интервал изменения значения слайдера
@@ -107,7 +122,6 @@ void MainWindow::add_move_sliders(QVBoxLayout *layout,
   layout->addWidget(moveY);
   layout->addWidget(moveZlabel);
   layout->addWidget(moveZ);
-  QPushButton *showSlidersButton = new QPushButton("Move object", this);
   layout->addWidget(showSlidersButton);
 
   connect(showSlidersButton, &QPushButton::clicked, this,
@@ -142,21 +156,9 @@ void MainWindow::add_move_sliders(QVBoxLayout *layout,
 
 void MainWindow::add_rotate_sliders(QVBoxLayout *layout,
                                     Qt3DCore::QTransform *transform) {
-  QSlider *rotateX = new QSlider(Qt::Horizontal, this);
-  QSlider *rotateY = new QSlider(Qt::Horizontal, this);
-  QSlider *rotateZ = new QSlider(Qt::Horizontal, this);
-  QLabel *rotateXlabel = new QLabel("X-axis rotation", this);
-  QLabel *rotateYlabel = new QLabel("Y-axis rotation", this);
-  QLabel *rotateZlabel = new QLabel("Z-axis rotation", this);
   rotateXlabel->setMaximumSize(150, 15);
   rotateYlabel->setMaximumSize(150, 15);
   rotateZlabel->setMaximumSize(150, 15);
-  rotateX->setVisible(false);
-  rotateY->setVisible(false);
-  rotateZ->setVisible(false);
-  rotateXlabel->setVisible(false);
-  rotateYlabel->setVisible(false);
-  rotateZlabel->setVisible(false);
 
   rotateX->setRange(0, 360);
   rotateX->setTickInterval(1);
@@ -171,10 +173,9 @@ void MainWindow::add_rotate_sliders(QVBoxLayout *layout,
   layout->addWidget(rotateY);
   layout->addWidget(rotateZlabel);
   layout->addWidget(rotateZ);
-  QPushButton *showSlidersButton = new QPushButton("Rotate object", this);
-  layout->addWidget(showSlidersButton);
+  layout->addWidget(showSlidersButton2);
 
-  connect(showSlidersButton, &QPushButton::clicked, this, [=]() {
+  connect(showSlidersButton2, &QPushButton::clicked, this, [=]() {
     rotateX->setVisible(!rotateX->isVisible());
     rotateY->setVisible(!rotateY->isVisible());
     rotateZ->setVisible(!rotateZ->isVisible());
@@ -223,7 +224,7 @@ void MainWindow::object_info(QVBoxLayout *layout, Qt3DRender::QMesh *mesh,
     }
     if (indexAttribute != nullptr) {
       int edgeCount = indexAttribute->count() / 3 *
-                      2; // Предполагается, что меш состоит из треугольников
+                      2;    // т.к. полигоны - треугольники
       qDebug() << "Number of edges in" << filename << ":" << edgeCount;
     }
   });
@@ -231,8 +232,6 @@ void MainWindow::object_info(QVBoxLayout *layout, Qt3DRender::QMesh *mesh,
 
 void MainWindow::add_scale_slider(QVBoxLayout *layout,
                                   Qt3DCore::QTransform *transform) {
-  QSlider *scaleObject = new QSlider(Qt::Horizontal, this);
-  QLabel *scaleObjectLabel = new QLabel("Scale object");
   scaleObjectLabel->setMaximumSize(150, 20);
   layout->addWidget(scaleObjectLabel);
   scaleObject->setRange(1, 100);
@@ -245,25 +244,21 @@ void MainWindow::add_scale_slider(QVBoxLayout *layout,
 }
 
 void MainWindow::settings(Qt3DExtras::Qt3DWindow * view, Qt3DCore::QEntity* object, QVBoxLayout *layout) {
-    QPushButton *settingsButton = new QPushButton("Settings", this);
     layout->addWidget(settingsButton);
     connect(settingsButton, &QPushButton::clicked, this,
             [=]() {
         projection_settings(layout);
-        edges_settings(object, layout);
         background_settings(view, layout);
             });
 }
 
 void MainWindow::projection_settings(QVBoxLayout *layout) {
-    QPushButton *parallelProjection = new QPushButton("Central projection", this);
     layout->addWidget(parallelProjection);
     connect(parallelProjection, &QPushButton::clicked, this,
             [=]() {
         cameraObj->lens()->setPerspectiveProjection(
             45.0f, 16.0f / 9.0f, 0.1f,
             10000.0f);            });
-    QPushButton *centralProjection = new QPushButton("Parallel projection", this);
     layout->addWidget(centralProjection);
     float aspectRatio = float(window()->width()) / window()->height();
     connect(centralProjection, &QPushButton::clicked, this, [=]() {
@@ -272,7 +267,6 @@ void MainWindow::projection_settings(QVBoxLayout *layout) {
 }
 
 void MainWindow::background_settings(Qt3DExtras::Qt3DWindow *view, QVBoxLayout * layout) {
-    QPushButton *backgroundColor = new QPushButton("Change background color", this);
     layout->addWidget(backgroundColor);
     connect(backgroundColor, &QPushButton::clicked, this, [=]() {
         QColor color = QColorDialog::getColor(Qt::white, this, "Choose background color");
