@@ -40,6 +40,7 @@ public:
   void vertecies_settings(QVBoxLayout *);
   void display_circles(Qt3DRender::QMesh::Status status);
   void background_settings(Qt3DExtras::Qt3DWindow *, QVBoxLayout *);
+  void line_color_settings(Qt3DExtras::Qt3DWindow *, QVBoxLayout *);
   void create_primitive_around_vertex(Qt3DCore::QEntity* rootEntity, Qt3DRender::QGeometry *geometry, const QString& primitiveType, float size);
   void record();
 
@@ -77,6 +78,7 @@ private:
   QPushButton *parallelProjection = nullptr;
   QPushButton *centralProjection = nullptr;
   QPushButton *backgroundColor = nullptr;
+  QPushButton *lineColor = nullptr;
 
 };
 #endif // MAINWINDOW_H

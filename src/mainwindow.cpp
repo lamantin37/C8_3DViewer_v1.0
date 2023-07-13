@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
   parallelProjection = new QPushButton("Central projection", this);
   centralProjection = new QPushButton("Parallel projection", this);
   backgroundColor = new QPushButton("Change background color", this);
+  lineColor = new QPushButton("Change line color", this);
 
   ui->setupUi(this);
   rootWin = new Qt3DCore::QEntity(); // конктруктор корневого окна
@@ -75,6 +76,8 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::open_object_file(Qt3DCore::QEntity* object, QVBoxLayout *layout, QLineEdit *lineEdit,
                                   QPushButton *button) {
 
+
+
   connect(button, &QPushButton::clicked, this, [=]() {
     QString filename = QFileDialog::getOpenFileName(this, "Open a file", "",
                                                     "Obj Files (*.obj)");
@@ -91,14 +94,18 @@ void MainWindow::open_object_file(Qt3DCore::QEntity* object, QVBoxLayout *layout
     Qt3DExtras::QPerVertexColorMaterial *material =
         new Qt3DExtras::QPerVertexColorMaterial(rootWin);
 
-    object->addComponent(mesh);
+//    Qt3DExtras::QDiffuseSpecularMaterial *line_material = new Qt3DExtras::QDiffuseSpecularMaterial(rootWin);
+//    line_material->setAmbient(QColor(Qt::red));
     object->addComponent(material);
+//    object->addComponent(line_material);
+
+    object->addComponent(mesh);
     transform = new Qt3DCore::QTransform();
     object->addComponent(transform);
-    add_scale_slider(layout, transform);
-    add_move_sliders(layout, transform);
-    add_rotate_sliders(layout, transform);
-    object_info(layout, mesh, filename);
+//    add_scale_slider(layout, transform);
+//    add_move_sliders(layout, transform);
+//    add_rotate_sliders(layout, transform);
+//    object_info(layout, mesh, filename);
   });
 }
 
@@ -249,6 +256,7 @@ void MainWindow::settings(Qt3DExtras::Qt3DWindow * view, Qt3DCore::QEntity* obje
             [=]() {
         projection_settings(layout);
         background_settings(view, layout);
+        line_color_settings(view, layout);
             });
 }
 
@@ -272,6 +280,18 @@ void MainWindow::background_settings(Qt3DExtras::Qt3DWindow *view, QVBoxLayout *
         QColor color = QColorDialog::getColor(Qt::white, this, "Choose background color");
         if (color.isValid()) {
             view->defaultFrameGraph()->setClearColor(QColor(color));
+        }
+    });
+}
+
+void MainWindow::line_color_settings(Qt3DExtras::Qt3DWindow *view, QVBoxLayout * layout) {
+    layout->addWidget(lineColor);
+    connect(lineColor, &QPushButton::clicked, this, [=]() {
+        QColor color = QColorDialog::getColor(Qt::white, this, "Choose line color");
+        if (color.isValid()) {
+            Qt3DExtras::QDiffuseSpecularMaterial *line_material = new Qt3DExtras::QDiffuseSpecularMaterial(rootWin);
+            line_material->setAmbient(color);
+            object->addComponent(line_material);
         }
     });
 }
