@@ -15,7 +15,13 @@
 #include <Qt3DRender>
 #include <QColor>
 #include <QColorDialog>
+#include "auxiliary_modules.h"
+
 extern "C" int start_parsing();
+extern "C" void object_parser(FILE*, s21_object *, s21_vertex*, int);
+extern "C" int parser_counter(FILE*, s21_object*);
+extern "C" void printPolygon(s21_object* object);
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -44,6 +50,8 @@ public:
   void line_type_settings(QVBoxLayout *);
   void create_primitive_around_vertex(Qt3DCore::QEntity* rootEntity, Qt3DRender::QGeometry *geometry, const QString& primitiveType, float size);
   void image_render(Qt3DExtras::Qt3DWindow *);
+  void sphere_point(s21_object, float);
+  int start_parsing();
   void record();
 
 private:

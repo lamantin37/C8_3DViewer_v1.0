@@ -23,6 +23,7 @@ int parser_counter(FILE *fp, s21_object *object) {
 
 void object_parser(FILE *fp, s21_object *object, s21_vertex *vertex,
                    int num_of_vert) {
+  setlocale(LC_NUMERIC, "C");
   vertex = malloc(num_of_vert * sizeof(s21_vertex));
   object->polygons = malloc(object->num_of_polygons * sizeof(s21_polygon));
   for (int i = 0; i < object->num_of_polygons; i++) {
@@ -39,6 +40,7 @@ void object_parser(FILE *fp, s21_object *object, s21_vertex *vertex,
     double x, y, z;
     int v1, v2, v3;
     int ch;
+
     while ((ch = fgetc(fp)) != EOF) {
       if (ch == 'v') {
         if (fscanf(fp, "%lf %lf %lf", &x, &y, &z) == 3) {
@@ -46,9 +48,9 @@ void object_parser(FILE *fp, s21_object *object, s21_vertex *vertex,
           vertex[vertex_index].y = y;
           vertex[vertex_index].z = z;
           vertex[vertex_index].vertex_number = vertex_count + 1;
-          // printf("%d: %lf %lf %lf\n", vertex[vertex_index].vertex_number,
-          // vertex[vertex_index].x, vertex[vertex_index].y,
-          // vertex[vertex_index].z);
+//           printf("%d: %lf %lf %lf\n", vertex[vertex_index].vertex_number,
+//           vertex[vertex_index].x, vertex[vertex_index].y,
+//           vertex[vertex_index].z);
           vertex_index++;
         }
         vertex_count++;
@@ -66,7 +68,7 @@ void object_parser(FILE *fp, s21_object *object, s21_vertex *vertex,
 }
 
 void printPolygon(s21_object* object) {
-  for (int i = 0; i < object->num_of_polygons; i++) {
+  for (int i = 0; i < 10/*object->num_of_polygons*/; i++) {
     for (int j = 0; j < POLYGON_SIZE; j++) {
       printf("polygon %d, v %d: %lf %lf %lf\n", i,
              object->polygons[i].vertices[j].vertex_number,
@@ -76,23 +78,4 @@ void printPolygon(s21_object* object) {
     }
     printf("\n");
   }
-}
-
-int start_parsing() {
-  FILE *fp;
-  int num_of_vert = 0;
-  if ((fp = fopen("cube.obj", "r")) == NULL) {
-    printf("Error opening file\n");
-  } else {
-    s21_object object;
-    object.polygons = NULL;
-    object.num_of_polygons = 0;
-
-    s21_vertex vertex;
-
-    num_of_vert = parser_counter(fp, &object);
-    object_parser(fp, &object, &vertex, num_of_vert);
-//    printPolygon(&object);
-  }
-  return num_of_vert;
 }

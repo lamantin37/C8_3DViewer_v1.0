@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "auxiliary_modules.h"
 #include "./ui_mainwindow.h"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -314,6 +313,45 @@ void MainWindow::line_color_settings(Qt3DExtras::Qt3DWindow *view, QVBoxLayout *
             object->addComponent(line_material);
         }
     });
+}
+
+int MainWindow::start_parsing() {
+  FILE *fp;
+  int num_of_vert = 0;
+  if ((fp = fopen("capybara.obj", "r")) == NULL) {
+    printf("Error opening file\n");
+  } else {
+    s21_object object;
+    object.polygons = NULL;
+    object.num_of_polygons = 0;
+
+    s21_vertex vertex;
+
+    num_of_vert = parser_counter(fp, &object);
+    object_parser(fp, &object, &vertex, num_of_vert);
+    sphere_point(object, 0.01);
+//    printPolygon(&object);
+  }
+  return num_of_vert;
+}
+
+void MainWindow::sphere_point(s21_object object, float radius) {
+    for (int i = 0; i < object.num_of_polygons; i++) {
+      for (int j = 0; j < POLYGON_SIZE; j++) {
+          Qt3DExtras::QSphereMesh* sphere = new Qt3DExtras::QSphereMesh(rootWin);
+          sphere->setRadius(radius);
+          Qt3DCore::QTransform* sphere_transform = new Qt3DCore::QTransform(rootWin);
+          float xpos = object.polygons[i].vertices[j].x;
+          float ypos = object.polygons[i].vertices[j].y;
+          float zpos = object.polygons[i].vertices[j].z;
+          sphere_transform->setTranslation(QVector3D(xpos, ypos, zpos));
+          Qt3DExtras::QPhongMaterial* sphere_material = new Qt3DExtras::QPhongMaterial(rootWin);
+          Qt3DCore::QEntity* sphereEntity = new Qt3DCore::QEntity(rootWin);
+          sphereEntity->addComponent(sphere);
+          sphereEntity->addComponent(sphere_transform);
+          sphereEntity->addComponent(sphere_material);
+      }
+    }
 }
 
 MainWindow::~MainWindow() { delete ui; }

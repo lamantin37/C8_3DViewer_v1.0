@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
 #define POLYGON_SIZE 3
 typedef struct vertex {
   double x;
@@ -20,9 +21,9 @@ typedef struct object {
   int num_of_polygons;
 } s21_object;
 
-void object_parser(FILE*, s21_object *, s21_vertex*, int);
-int start_parsing();
-int parser_counter(FILE*, s21_object*);
+//void object_parser(FILE*, s21_object *, s21_vertex*, int);
+//int start_parsing();
+//int parser_counter(FILE*, s21_object*);
 //int sum();
 
 #endif // AUXILIARY_MODULES_H
