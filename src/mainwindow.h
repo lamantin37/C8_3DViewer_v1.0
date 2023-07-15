@@ -50,13 +50,14 @@ public:
   void line_type_settings(QVBoxLayout *);
   void create_primitive_around_vertex(Qt3DCore::QEntity* rootEntity, Qt3DRender::QGeometry *geometry, const QString& primitiveType, float size);
   void image_render(Qt3DExtras::Qt3DWindow *);
-  void sphere_point(s21_object, float);
+  void circle_point(s21_object, float);
+  void square_point(s21_object, float);
   int start_parsing();
   void record();
 
 private:
   Ui::MainWindow *ui;
-  Qt3DCore::QEntity *rootWin = nullptr;     // корневое окно
+  Qt3DCore::QEntity *parentWin = nullptr;     // корневое окно
   Qt3DRender::QCamera *cameraObj = nullptr; // камера
   Qt3DCore::QEntity *sceneLoader = nullptr; // базовая сущность
   Qt3DRender::QSceneLoader *loader = nullptr; // для загрузки файлов

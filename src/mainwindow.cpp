@@ -31,13 +31,13 @@ MainWindow::MainWindow(QWidget *parent)
 
 
   ui->setupUi(this);
-  rootWin = new Qt3DCore::QEntity(); // конктруктор корневого окна
-  rootWin->setObjectName("Root window");
+  parentWin = new Qt3DCore::QEntity(); // конктруктор корневого окна
+  parentWin->setObjectName("Root window");
   Qt3DExtras::Qt3DWindow *view =
       new Qt3DExtras::Qt3DWindow(); // создаем окно для отображения сцены
 
   view->defaultFrameGraph()->setClearColor(QRgb(0xffffff)); // стандартный фон
-  view->setRootEntity(rootWin); // устанавливаем корневое окно
+  view->setRootEntity(parentWin); // устанавливаем корневое окно
   QWidget *widget = QWidget::createWindowContainer(
       view); // встраивание виджета view в окно приложения
   widget->setMinimumSize(QSize(100, 100));
@@ -65,12 +65,12 @@ MainWindow::MainWindow(QWidget *parent)
   cameraObj->setViewCenter(QVector3D(1, 0, 0)); // центр обзора камеры
 
   Qt3DExtras::QOrbitCameraController *cameraController =
-      new Qt3DExtras::QOrbitCameraController(rootWin);
+      new Qt3DExtras::QOrbitCameraController(parentWin);
   cameraController->setCamera(cameraObj);
   cameraController->setLookSpeed(100.0f);  // Скорость вращения
   cameraController->setLinearSpeed(50.0f); // Линейная скорость
 
-  object = new Qt3DCore::QEntity(rootWin);
+  object = new Qt3DCore::QEntity(parentWin);
   // открытие файла и его загрузка
   open_object_file(object, layout, lineEdit, button);
   settings(view, object, layout);
@@ -87,15 +87,15 @@ void MainWindow::open_object_file(Qt3DCore::QEntity* object, QVBoxLayout *layout
         object->removeComponent(mesh);
         delete mesh;
     }
-    mesh = new Qt3DRender::QMesh(rootWin);
+    mesh = new Qt3DRender::QMesh(parentWin);
     mesh->setSource(QUrl::fromLocalFile(filename));
     mesh->setPrimitiveType(
         Qt3DRender::QGeometryRenderer::Lines); // Установка режима отображения
                                                // каркаса
 
     Qt3DExtras::QPerVertexColorMaterial *material =
-        new Qt3DExtras::QPerVertexColorMaterial(rootWin);
-    Qt3DRender::QRenderStateSet *renderStateSet = new Qt3DRender::QRenderStateSet(rootWin);
+        new Qt3DExtras::QPerVertexColorMaterial(parentWin);
+    Qt3DRender::QRenderStateSet *renderStateSet = new Qt3DRender::QRenderStateSet(parentWin);
     Qt3DRender::QLineWidth *lineWidth = new Qt3DRender::QLineWidth(renderStateSet);
     lineWidth->setValue(120);
 
@@ -308,7 +308,7 @@ void MainWindow::line_color_settings(Qt3DExtras::Qt3DWindow *view, QVBoxLayout *
     connect(lineColor, &QPushButton::clicked, this, [=]() {
         QColor color = QColorDialog::getColor(Qt::white, this, "Choose line color");
         if (color.isValid()) {
-            Qt3DExtras::QDiffuseSpecularMaterial *line_material = new Qt3DExtras::QDiffuseSpecularMaterial(rootWin);
+            Qt3DExtras::QDiffuseSpecularMaterial *line_material = new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
             line_material->setAmbient(color);
             object->addComponent(line_material);
         }
@@ -318,7 +318,7 @@ void MainWindow::line_color_settings(Qt3DExtras::Qt3DWindow *view, QVBoxLayout *
 int MainWindow::start_parsing() {
   FILE *fp;
   int num_of_vert = 0;
-  if ((fp = fopen("capybara.obj", "r")) == NULL) {
+  if ((fp = fopen("cube.obj", "r")) == NULL) {
     printf("Error opening file\n");
   } else {
     s21_object object;
@@ -329,26 +329,47 @@ int MainWindow::start_parsing() {
 
     num_of_vert = parser_counter(fp, &object);
     object_parser(fp, &object, &vertex, num_of_vert);
-    sphere_point(object, 0.01);
+    square_point(object, 0.03);
 //    printPolygon(&object);
   }
   return num_of_vert;
 }
 
-void MainWindow::sphere_point(s21_object object, float radius) {
+void MainWindow::circle_point(s21_object object, float radius) {
     for (int i = 0; i < object.num_of_polygons; i++) {
       for (int j = 0; j < POLYGON_SIZE; j++) {
-          Qt3DExtras::QSphereMesh* sphere = new Qt3DExtras::QSphereMesh(rootWin);
-          sphere->setRadius(radius);
-          Qt3DCore::QTransform* sphere_transform = new Qt3DCore::QTransform(rootWin);
+          Qt3DExtras::QCylinderMesh* circleMesh = new Qt3DExtras::QCylinderMesh(parentWin);
+          circleMesh->setRadius(radius);
+          circleMesh->setLength(0);
+          Qt3DCore::QTransform* sphere_transform = new Qt3DCore::QTransform(parentWin);
           float xpos = object.polygons[i].vertices[j].x;
           float ypos = object.polygons[i].vertices[j].y;
           float zpos = object.polygons[i].vertices[j].z;
           sphere_transform->setTranslation(QVector3D(xpos, ypos, zpos));
-          Qt3DExtras::QPhongMaterial* sphere_material = new Qt3DExtras::QPhongMaterial(rootWin);
-          Qt3DCore::QEntity* sphereEntity = new Qt3DCore::QEntity(rootWin);
-          sphereEntity->addComponent(sphere);
+          Qt3DExtras::QPhongMaterial* sphere_material = new Qt3DExtras::QPhongMaterial(parentWin);
+          Qt3DCore::QEntity* sphereEntity = new Qt3DCore::QEntity(parentWin);
+          sphereEntity->addComponent(circleMesh);
           sphereEntity->addComponent(sphere_transform);
+          sphereEntity->addComponent(sphere_material);
+      }
+    }
+}
+
+void MainWindow::square_point(s21_object object, float side) {
+    for (int i = 0; i < object.num_of_polygons; i++) {
+      for (int j = 0; j < POLYGON_SIZE; j++) {
+          Qt3DExtras::QPlaneMesh* squareMesh = new Qt3DExtras::QPlaneMesh(parentWin);
+          squareMesh->setWidth(side);
+          squareMesh->setHeight(side);
+          Qt3DCore::QTransform* square_transform = new Qt3DCore::QTransform(parentWin);
+          float xpos = object.polygons[i].vertices[j].x;
+          float ypos = object.polygons[i].vertices[j].y;
+          float zpos = object.polygons[i].vertices[j].z;
+          square_transform->setTranslation(QVector3D(xpos, ypos, zpos));
+          Qt3DExtras::QPhongMaterial* sphere_material = new Qt3DExtras::QPhongMaterial(parentWin);
+          Qt3DCore::QEntity* sphereEntity = new Qt3DCore::QEntity(parentWin);
+          sphereEntity->addComponent(squareMesh);
+          sphereEntity->addComponent(square_transform);
           sphereEntity->addComponent(sphere_material);
       }
     }
