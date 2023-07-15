@@ -15,7 +15,7 @@
 #include <Qt3DRender>
 #include <QColor>
 #include <QColorDialog>
-
+extern "C" int start_parsing();
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -41,7 +41,9 @@ public:
   void display_circles(Qt3DRender::QMesh::Status status);
   void background_settings(Qt3DExtras::Qt3DWindow *, QVBoxLayout *);
   void line_color_settings(Qt3DExtras::Qt3DWindow *, QVBoxLayout *);
+  void line_type_settings(QVBoxLayout *);
   void create_primitive_around_vertex(Qt3DCore::QEntity* rootEntity, Qt3DRender::QGeometry *geometry, const QString& primitiveType, float size);
+  void image_render(Qt3DExtras::Qt3DWindow *);
   void record();
 
 private:
@@ -79,6 +81,9 @@ private:
   QPushButton *centralProjection = nullptr;
   QPushButton *backgroundColor = nullptr;
   QPushButton *lineColor = nullptr;
+  QPushButton *lineType = nullptr;
+  QPushButton *pointType = nullptr;
+  Qt3DRender::QRenderCapture *capture;
 
 };
 #endif // MAINWINDOW_H

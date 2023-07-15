@@ -2,15 +2,19 @@ QT += core gui
 QT += 3dcore 3drender 3dinput 3dextras
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += \
+        std=c11 \
+        c++11
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
+    parser.c \
     main.cpp \
-    mainwindow.cpp \
+    mainwindow.cpp
 
 HEADERS += \
-    mainwindow.h \
+    auxiliary_modules.h \
+    mainwindow.h
 
 FORMS += \
     MainWindow.ui

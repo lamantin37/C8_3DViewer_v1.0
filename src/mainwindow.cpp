@@ -1,6 +1,6 @@
 #include "mainwindow.h"
+#include "auxiliary_modules.h"
 #include "./ui_mainwindow.h"
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   moveX = new QSlider(Qt::Horizontal, this);
@@ -27,12 +27,16 @@ MainWindow::MainWindow(QWidget *parent)
   centralProjection = new QPushButton("Parallel projection", this);
   backgroundColor = new QPushButton("Change background color", this);
   lineColor = new QPushButton("Change line color", this);
+  lineType = new QPushButton("Line type", this);
+  pointType = new QPushButton("Dotted line type", this);
+
 
   ui->setupUi(this);
   rootWin = new Qt3DCore::QEntity(); // конктруктор корневого окна
   rootWin->setObjectName("Root window");
   Qt3DExtras::Qt3DWindow *view =
       new Qt3DExtras::Qt3DWindow(); // создаем окно для отображения сцены
+
   view->defaultFrameGraph()->setClearColor(QRgb(0xffffff)); // стандартный фон
   view->setRootEntity(rootWin); // устанавливаем корневое окно
   QWidget *widget = QWidget::createWindowContainer(
@@ -71,13 +75,11 @@ MainWindow::MainWindow(QWidget *parent)
   // открытие файла и его загрузка
   open_object_file(object, layout, lineEdit, button);
   settings(view, object, layout);
+
 }
 
 void MainWindow::open_object_file(Qt3DCore::QEntity* object, QVBoxLayout *layout, QLineEdit *lineEdit,
                                   QPushButton *button) {
-
-
-
   connect(button, &QPushButton::clicked, this, [=]() {
     QString filename = QFileDialog::getOpenFileName(this, "Open a file", "",
                                                     "Obj Files (*.obj)");
@@ -91,21 +93,21 @@ void MainWindow::open_object_file(Qt3DCore::QEntity* object, QVBoxLayout *layout
     mesh->setPrimitiveType(
         Qt3DRender::QGeometryRenderer::Lines); // Установка режима отображения
                                                // каркаса
+
     Qt3DExtras::QPerVertexColorMaterial *material =
         new Qt3DExtras::QPerVertexColorMaterial(rootWin);
+    Qt3DRender::QRenderStateSet *renderStateSet = new Qt3DRender::QRenderStateSet(rootWin);
+    Qt3DRender::QLineWidth *lineWidth = new Qt3DRender::QLineWidth(renderStateSet);
+    lineWidth->setValue(120);
 
-//    Qt3DExtras::QDiffuseSpecularMaterial *line_material = new Qt3DExtras::QDiffuseSpecularMaterial(rootWin);
-//    line_material->setAmbient(QColor(Qt::red));
     object->addComponent(material);
-//    object->addComponent(line_material);
-
     object->addComponent(mesh);
     transform = new Qt3DCore::QTransform();
     object->addComponent(transform);
-//    add_scale_slider(layout, transform);
-//    add_move_sliders(layout, transform);
-//    add_rotate_sliders(layout, transform);
-//    object_info(layout, mesh, filename);
+    add_scale_slider(layout, transform);
+    add_move_sliders(layout, transform);
+    add_rotate_sliders(layout, transform);
+    object_info(layout, mesh, filename);
   });
 }
 
@@ -232,7 +234,7 @@ void MainWindow::object_info(QVBoxLayout *layout, Qt3DRender::QMesh *mesh,
     if (indexAttribute != nullptr) {
       int edgeCount = indexAttribute->count() / 3 *
                       2;    // т.к. полигоны - треугольники
-      qDebug() << "Number of edges in" << filename << ":" << edgeCount;
+      qDebug() << "Number of edges in" << start_parsing() << filename << ":" << edgeCount;
     }
   });
 }
@@ -254,6 +256,8 @@ void MainWindow::settings(Qt3DExtras::Qt3DWindow * view, Qt3DCore::QEntity* obje
     layout->addWidget(settingsButton);
     connect(settingsButton, &QPushButton::clicked, this,
             [=]() {
+        line_type_settings(layout);
+//            image_render(view);
         projection_settings(layout);
         background_settings(view, layout);
         line_color_settings(view, layout);
@@ -281,6 +285,22 @@ void MainWindow::background_settings(Qt3DExtras::Qt3DWindow *view, QVBoxLayout *
         if (color.isValid()) {
             view->defaultFrameGraph()->setClearColor(QColor(color));
         }
+    });
+}
+
+void MainWindow::image_render(Qt3DExtras::Qt3DWindow *view) {
+    QScreen *screen = view->screen();
+    screen->grabWindow(view->winId()).save("kapy.jpeg");
+}
+
+void MainWindow::line_type_settings(QVBoxLayout *layout) {
+    layout->addWidget(lineType);
+    connect(lineType, &QPushButton::clicked, this, [=]() {
+        mesh->setPrimitiveType(Qt3DRender::QGeometryRenderer::Lines);
+    });
+    layout->addWidget(pointType);
+    connect(pointType, &QPushButton::clicked, this, [=]() {
+        mesh->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
     });
 }
 
