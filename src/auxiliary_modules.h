@@ -1,9 +1,9 @@
 #ifndef AUXILIARY_MODULES_H
 #define AUXILIARY_MODULES_H
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <locale.h>
 #define POLYGON_SIZE 3
 typedef struct vertex {
   double x;
@@ -19,11 +19,7 @@ typedef struct polygon {
 typedef struct object {
   struct polygon *polygons;
   int num_of_polygons;
+  int num_of_vertices;
 } s21_object;
-
-//void object_parser(FILE*, s21_object *, s21_vertex*, int);
-//int start_parsing();
-//int parser_counter(FILE*, s21_object*);
-//int sum();
 
 #endif // AUXILIARY_MODULES_H

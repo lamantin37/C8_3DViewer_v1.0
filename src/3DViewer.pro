@@ -10,11 +10,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     parser.c \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    settingswindow.cpp
 
 HEADERS += \
     auxiliary_modules.h \
-    mainwindow.h
+    mainwindow.h \
+    settingswindow.h
 
 FORMS += \
     MainWindow.ui
@@ -23,6 +25,11 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-RESOURCES +=
+RESOURCES += \
+    shaders.qrc
+
+DISTFILES += \
+    dashed_line.frag \
+    vert.vert
 
 

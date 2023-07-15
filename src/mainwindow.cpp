@@ -1,34 +1,9 @@
 #include "mainwindow.h"
+
 #include "./ui_mainwindow.h"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
-  moveX = new QSlider(Qt::Horizontal, this);
-  moveZ = new QSlider(Qt::Horizontal, this);
-  moveY = new QSlider(Qt::Horizontal, this);
-  moveXlabel = new QLabel("X-axis movement", this);
-  moveYlabel = new QLabel("Y-axis movement", this);
-  moveZlabel = new QLabel("Z-axis movement", this);
-  showSlidersButton = new QPushButton("Move object", this);
-
-  rotateX = new QSlider(Qt::Horizontal, this);
-  rotateY = new QSlider(Qt::Horizontal, this);
-  rotateZ = new QSlider(Qt::Horizontal, this);
-  rotateXlabel = new QLabel("X-axis rotation", this);
-  rotateYlabel = new QLabel("Y-axis rotation", this);
-  rotateZlabel = new QLabel("Z-axis rotation", this);
-  showSlidersButton2 = new QPushButton("Rotate object", this);
-
-  scaleObject = new QSlider(Qt::Horizontal, this);
-  scaleObjectLabel = new QLabel("Scale object");
-
   settingsButton = new QPushButton("Settings", this);
-  parallelProjection = new QPushButton("Central projection", this);
-  centralProjection = new QPushButton("Parallel projection", this);
-  backgroundColor = new QPushButton("Change background color", this);
-  lineColor = new QPushButton("Change line color", this);
-  lineType = new QPushButton("Line type", this);
-  pointType = new QPushButton("Dotted line type", this);
-
 
   ui->setupUi(this);
   parentWin = new Qt3DCore::QEntity(); // конктруктор корневого окна
@@ -47,8 +22,8 @@ MainWindow::MainWindow(QWidget *parent)
   QPushButton *button = new QPushButton("Choose file", this);
   QLineEdit *lineEdit = new QLineEdit(this);
 
-  QVBoxLayout *layout = new QVBoxLayout(); // добавление виджета, кнопки и
-                                           // текстового поля в лейаут
+  layout = new QVBoxLayout(); // добавление виджета, кнопки и
+                              // текстового поля в лейаут
   layout->addWidget(widget);
   layout->addWidget(button);
   layout->addWidget(lineEdit);
@@ -72,20 +47,20 @@ MainWindow::MainWindow(QWidget *parent)
 
   object = new Qt3DCore::QEntity(parentWin);
   // открытие файла и его загрузка
-  open_object_file(object, layout, lineEdit, button);
-  settings(view, object, layout);
-
+  open_object_file(view, object, layout, lineEdit, button);
 }
 
-void MainWindow::open_object_file(Qt3DCore::QEntity* object, QVBoxLayout *layout, QLineEdit *lineEdit,
+void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
+                                  Qt3DCore::QEntity *object,
+                                  QVBoxLayout *layout, QLineEdit *lineEdit,
                                   QPushButton *button) {
   connect(button, &QPushButton::clicked, this, [=]() {
     QString filename = QFileDialog::getOpenFileName(this, "Open a file", "",
                                                     "Obj Files (*.obj)");
     lineEdit->setText(filename);
     if (mesh != nullptr) {
-        object->removeComponent(mesh);
-        delete mesh;
+      object->removeComponent(mesh);
+      delete mesh;
     }
     mesh = new Qt3DRender::QMesh(parentWin);
     mesh->setSource(QUrl::fromLocalFile(filename));
@@ -95,284 +70,117 @@ void MainWindow::open_object_file(Qt3DCore::QEntity* object, QVBoxLayout *layout
 
     Qt3DExtras::QPerVertexColorMaterial *material =
         new Qt3DExtras::QPerVertexColorMaterial(parentWin);
-    Qt3DRender::QRenderStateSet *renderStateSet = new Qt3DRender::QRenderStateSet(parentWin);
-    Qt3DRender::QLineWidth *lineWidth = new Qt3DRender::QLineWidth(renderStateSet);
+    Qt3DRender::QRenderStateSet *renderStateSet =
+        new Qt3DRender::QRenderStateSet(parentWin);
+    Qt3DRender::QLineWidth *lineWidth =
+        new Qt3DRender::QLineWidth(renderStateSet);
     lineWidth->setValue(120);
 
     object->addComponent(material);
     object->addComponent(mesh);
     transform = new Qt3DCore::QTransform();
     object->addComponent(transform);
-    add_scale_slider(layout, transform);
-    add_move_sliders(layout, transform);
-    add_rotate_sliders(layout, transform);
-    object_info(layout, mesh, filename);
+    settings(view, object, layout);
+    const char *charstring = qPrintable(filename);
+    start_parsing(charstring);
   });
 }
 
-void MainWindow::add_move_sliders(QVBoxLayout *layout,
-                                  Qt3DCore::QTransform *transform) {
-  moveXlabel->setMaximumSize(150, 15);
-  moveYlabel->setMaximumSize(150, 15);
-  moveZlabel->setMaximumSize(150, 15);
+void MainWindow::object_info(s21_object object, const char *filename) {
+  QString str(filename);
+  QLabel *fileLabel = new QLabel("File: " + str);
+  QLabel *verticesLabel = new QLabel("Number of vertices: " +
+                                     QString::number(object.num_of_vertices));
+  QLabel *polygonsLabel = new QLabel("Number of polygons: " +
+                                     QString::number(object.num_of_polygons));
+  fileLabel->setFixedSize(QSize(1000, 20));
+  verticesLabel->setFixedSize(QSize(250, 20));
+  polygonsLabel->setFixedSize(QSize(250, 20));
+  layout->addWidget(fileLabel);
+  layout->addWidget(verticesLabel);
+  layout->addWidget(polygonsLabel);
+}
 
-  moveX->setRange(-100, 100); // задаем диапазон слайдера
-  moveX->setTickInterval(1); // интервал изменения значения слайдера
-  moveY->setRange(-100, 100);
-
-  moveY->setTickInterval(1);
-  moveZ->setRange(-100, 100);
-  moveZ->setTickInterval(1);
-
-  layout->addWidget(moveXlabel);
-  layout->addWidget(moveX);
-  layout->addWidget(moveYlabel);
-  layout->addWidget(moveY);
-  layout->addWidget(moveZlabel);
-  layout->addWidget(moveZ);
-  layout->addWidget(showSlidersButton);
-
-  connect(showSlidersButton, &QPushButton::clicked, this,
-          [=]() { // показать слайдер при нажатии на кнопку
-            moveX->setVisible(!moveX->isVisible());
-            moveY->setVisible(!moveY->isVisible());
-            moveZ->setVisible(!moveZ->isVisible());
-            moveXlabel->setVisible(!moveXlabel->isVisible());
-            moveYlabel->setVisible(!moveYlabel->isVisible());
-            moveZlabel->setVisible(!moveZlabel->isVisible());
-          });
-
-  connect(moveX, &QSlider::valueChanged, this, [=]() {
-    float x = moveX->value();
-    float y = moveY->value();
-    float z = moveZ->value();
-    transform->setTranslation(QVector3D(x, y, z));
-  });
-  connect(moveY, &QSlider::valueChanged, this, [=]() {
-    float x = moveX->value();
-    float y = moveY->value();
-    float z = moveZ->value();
-    transform->setTranslation(QVector3D(x, y, z));
-  });
-  connect(moveZ, &QSlider::valueChanged, this, [=]() {
-    float x = moveX->value();
-    float y = moveY->value();
-    float z = moveZ->value();
-    transform->setTranslation(QVector3D(x, y, z));
+void MainWindow::settings(Qt3DExtras::Qt3DWindow *view,
+                          Qt3DCore::QEntity *object, QVBoxLayout *layout) {
+  layout->addWidget(settingsButton);
+  connect(settingsButton, &QPushButton::clicked, this, [=]() {
+    settingsWin = new SettingsWindow(this, transform);
+    settingsWin->show();
+    settingsWin->add_move_sliders(transform);
+    settingsWin->add_rotate_sliders(transform);
+    settingsWin->add_scale_slider(transform);
+    settingsWin->projection_settings(cameraObj);
+    settingsWin->line_color_settings(parentWin, object);
+    settingsWin->line_type_settings(mesh);
+        settingsWin->background_settings(view);
   });
 }
 
-void MainWindow::add_rotate_sliders(QVBoxLayout *layout,
-                                    Qt3DCore::QTransform *transform) {
-  rotateXlabel->setMaximumSize(150, 15);
-  rotateYlabel->setMaximumSize(150, 15);
-  rotateZlabel->setMaximumSize(150, 15);
-
-  rotateX->setRange(0, 360);
-  rotateX->setTickInterval(1);
-  rotateY->setRange(0, 360);
-  rotateY->setTickInterval(1);
-  rotateZ->setRange(0, 360);
-  rotateZ->setTickInterval(1);
-
-  layout->addWidget(rotateXlabel);
-  layout->addWidget(rotateX);
-  layout->addWidget(rotateYlabel);
-  layout->addWidget(rotateY);
-  layout->addWidget(rotateZlabel);
-  layout->addWidget(rotateZ);
-  layout->addWidget(showSlidersButton2);
-
-  connect(showSlidersButton2, &QPushButton::clicked, this, [=]() {
-    rotateX->setVisible(!rotateX->isVisible());
-    rotateY->setVisible(!rotateY->isVisible());
-    rotateZ->setVisible(!rotateZ->isVisible());
-    rotateXlabel->setVisible(!rotateXlabel->isVisible());
-    rotateYlabel->setVisible(!rotateYlabel->isVisible());
-    rotateZlabel->setVisible(!rotateZlabel->isVisible());
-  });
-  connect(rotateX, &QSlider::valueChanged, this, [=]() {
-    float angle = rotateX->value(); // угол поворота
-    transform->setRotationX(angle); // поворот вокруг оси X на заданный угол
-  });
-  connect(rotateY, &QSlider::valueChanged, this, [=]() {
-    float angle = rotateY->value();
-    transform->setRotationY(angle);
-  });
-  connect(rotateZ, &QSlider::valueChanged, this, [=]() {
-    float angle = rotateZ->value();
-    transform->setRotationZ(angle);
-  });
-}
-
-void MainWindow::object_info(QVBoxLayout *layout, Qt3DRender::QMesh *mesh,
-                             const QString &filename) {
-  connect(mesh, &Qt3DRender::QMesh::geometryChanged, this, [=]() {
-    Qt3DRender::QGeometry *geometry = mesh->geometry();
-    // Подсчет вершин
-    Qt3DRender::QAttribute *vertexAttribute = nullptr;
-    for (auto attr : geometry->attributes()) {
-      if (attr->name() ==
-          Qt3DRender::QAttribute::defaultPositionAttributeName()) {
-        vertexAttribute = attr;
-        break;
-      }
-    }
-    // Подсчет ребер
-    Qt3DRender::QAttribute *indexAttribute = nullptr;
-    for (auto attr : geometry->attributes()) {
-      if (attr->attributeType() == Qt3DRender::QAttribute::IndexAttribute) {
-        indexAttribute = attr;
-        break;
-      }
-    }
-    if (vertexAttribute != nullptr) {
-      int vertexCount = vertexAttribute->count();
-      qDebug() << "Number of vertices in" << filename << ":" << vertexCount;
-    }
-    if (indexAttribute != nullptr) {
-      int edgeCount = indexAttribute->count() / 3 *
-                      2;    // т.к. полигоны - треугольники
-      qDebug() << "Number of edges in" << start_parsing() << filename << ":" << edgeCount;
-    }
-  });
-}
-
-void MainWindow::add_scale_slider(QVBoxLayout *layout,
-                                  Qt3DCore::QTransform *transform) {
-  scaleObjectLabel->setMaximumSize(150, 20);
-  layout->addWidget(scaleObjectLabel);
-  scaleObject->setRange(1, 100);
-  scaleObject->setValue(10);
-  layout->addWidget(scaleObject);
-  connect(scaleObject, &QSlider::valueChanged, this, [=]() {
-    float scale = scaleObject->value();
-    transform->setScale(scale);
-  });
-}
-
-void MainWindow::settings(Qt3DExtras::Qt3DWindow * view, Qt3DCore::QEntity* object, QVBoxLayout *layout) {
-    layout->addWidget(settingsButton);
-    connect(settingsButton, &QPushButton::clicked, this,
-            [=]() {
-        line_type_settings(layout);
-//            image_render(view);
-        projection_settings(layout);
-        background_settings(view, layout);
-        line_color_settings(view, layout);
-            });
-}
-
-void MainWindow::projection_settings(QVBoxLayout *layout) {
-    layout->addWidget(parallelProjection);
-    connect(parallelProjection, &QPushButton::clicked, this,
-            [=]() {
-        cameraObj->lens()->setPerspectiveProjection(
-            45.0f, 16.0f / 9.0f, 0.1f,
-            10000.0f);            });
-    layout->addWidget(centralProjection);
-    float aspectRatio = float(window()->width()) / window()->height();
-    connect(centralProjection, &QPushButton::clicked, this, [=]() {
-        cameraObj->lens()->setOrthographicProjection(-aspectRatio, aspectRatio, -1.0, 1.0, 0.1f, 10000.0f);
-    });
-}
-
-void MainWindow::background_settings(Qt3DExtras::Qt3DWindow *view, QVBoxLayout * layout) {
-    layout->addWidget(backgroundColor);
-    connect(backgroundColor, &QPushButton::clicked, this, [=]() {
-        QColor color = QColorDialog::getColor(Qt::white, this, "Choose background color");
-        if (color.isValid()) {
-            view->defaultFrameGraph()->setClearColor(QColor(color));
-        }
-    });
-}
-
-void MainWindow::image_render(Qt3DExtras::Qt3DWindow *view) {
-    QScreen *screen = view->screen();
-    screen->grabWindow(view->winId()).save("kapy.jpeg");
-}
-
-void MainWindow::line_type_settings(QVBoxLayout *layout) {
-    layout->addWidget(lineType);
-    connect(lineType, &QPushButton::clicked, this, [=]() {
-        mesh->setPrimitiveType(Qt3DRender::QGeometryRenderer::Lines);
-    });
-    layout->addWidget(pointType);
-    connect(pointType, &QPushButton::clicked, this, [=]() {
-        mesh->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
-    });
-}
-
-void MainWindow::line_color_settings(Qt3DExtras::Qt3DWindow *view, QVBoxLayout * layout) {
-    layout->addWidget(lineColor);
-    connect(lineColor, &QPushButton::clicked, this, [=]() {
-        QColor color = QColorDialog::getColor(Qt::white, this, "Choose line color");
-        if (color.isValid()) {
-            Qt3DExtras::QDiffuseSpecularMaterial *line_material = new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
-            line_material->setAmbient(color);
-            object->addComponent(line_material);
-        }
-    });
-}
-
-int MainWindow::start_parsing() {
+int MainWindow::start_parsing(const char *filename) {
   FILE *fp;
   int num_of_vert = 0;
-  if ((fp = fopen("cube.obj", "r")) == NULL) {
+  if ((fp = fopen(filename, "r")) == NULL) {
     printf("Error opening file\n");
   } else {
     s21_object object;
     object.polygons = NULL;
     object.num_of_polygons = 0;
+    object.num_of_vertices = 0;
 
     s21_vertex vertex;
 
     num_of_vert = parser_counter(fp, &object);
     object_parser(fp, &object, &vertex, num_of_vert);
-    square_point(object, 0.03);
-//    printPolygon(&object);
+    object_info(object, filename);
   }
   return num_of_vert;
 }
 
 void MainWindow::circle_point(s21_object object, float radius) {
-    for (int i = 0; i < object.num_of_polygons; i++) {
-      for (int j = 0; j < POLYGON_SIZE; j++) {
-          Qt3DExtras::QCylinderMesh* circleMesh = new Qt3DExtras::QCylinderMesh(parentWin);
-          circleMesh->setRadius(radius);
-          circleMesh->setLength(0);
-          Qt3DCore::QTransform* sphere_transform = new Qt3DCore::QTransform(parentWin);
-          float xpos = object.polygons[i].vertices[j].x;
-          float ypos = object.polygons[i].vertices[j].y;
-          float zpos = object.polygons[i].vertices[j].z;
-          sphere_transform->setTranslation(QVector3D(xpos, ypos, zpos));
-          Qt3DExtras::QPhongMaterial* sphere_material = new Qt3DExtras::QPhongMaterial(parentWin);
-          Qt3DCore::QEntity* sphereEntity = new Qt3DCore::QEntity(parentWin);
-          sphereEntity->addComponent(circleMesh);
-          sphereEntity->addComponent(sphere_transform);
-          sphereEntity->addComponent(sphere_material);
-      }
+  for (int i = 0; i < object.num_of_polygons; i++) {
+    for (int j = 0; j < POLYGON_SIZE; j++) {
+      Qt3DExtras::QCylinderMesh *circleMesh =
+          new Qt3DExtras::QCylinderMesh(parentWin);
+      circleMesh->setRadius(radius);
+      circleMesh->setLength(0);
+      Qt3DCore::QTransform *sphere_transform =
+          new Qt3DCore::QTransform(parentWin);
+      float xpos = object.polygons[i].vertices[j].x;
+      float ypos = object.polygons[i].vertices[j].y;
+      float zpos = object.polygons[i].vertices[j].z;
+      sphere_transform->setTranslation(QVector3D(xpos, ypos, zpos));
+      Qt3DExtras::QPhongMaterial *sphere_material =
+          new Qt3DExtras::QPhongMaterial(parentWin);
+      Qt3DCore::QEntity *sphereEntity = new Qt3DCore::QEntity(parentWin);
+      sphereEntity->addComponent(circleMesh);
+      sphereEntity->addComponent(sphere_transform);
+      sphereEntity->addComponent(sphere_material);
     }
+  }
 }
 
 void MainWindow::square_point(s21_object object, float side) {
-    for (int i = 0; i < object.num_of_polygons; i++) {
-      for (int j = 0; j < POLYGON_SIZE; j++) {
-          Qt3DExtras::QPlaneMesh* squareMesh = new Qt3DExtras::QPlaneMesh(parentWin);
-          squareMesh->setWidth(side);
-          squareMesh->setHeight(side);
-          Qt3DCore::QTransform* square_transform = new Qt3DCore::QTransform(parentWin);
-          float xpos = object.polygons[i].vertices[j].x;
-          float ypos = object.polygons[i].vertices[j].y;
-          float zpos = object.polygons[i].vertices[j].z;
-          square_transform->setTranslation(QVector3D(xpos, ypos, zpos));
-          Qt3DExtras::QPhongMaterial* sphere_material = new Qt3DExtras::QPhongMaterial(parentWin);
-          Qt3DCore::QEntity* sphereEntity = new Qt3DCore::QEntity(parentWin);
-          sphereEntity->addComponent(squareMesh);
-          sphereEntity->addComponent(square_transform);
-          sphereEntity->addComponent(sphere_material);
-      }
+  for (int i = 0; i < object.num_of_polygons; i++) {
+    for (int j = 0; j < POLYGON_SIZE; j++) {
+      Qt3DExtras::QPlaneMesh *squareMesh =
+          new Qt3DExtras::QPlaneMesh(parentWin);
+      squareMesh->setWidth(side);
+      squareMesh->setHeight(side);
+      Qt3DCore::QTransform *square_transform =
+          new Qt3DCore::QTransform(parentWin);
+      float xpos = object.polygons[i].vertices[j].x;
+      float ypos = object.polygons[i].vertices[j].y;
+      float zpos = object.polygons[i].vertices[j].z;
+      square_transform->setTranslation(QVector3D(xpos, ypos, zpos));
+      Qt3DExtras::QPhongMaterial *sphere_material =
+          new Qt3DExtras::QPhongMaterial(parentWin);
+      Qt3DCore::QEntity *sphereEntity = new Qt3DCore::QEntity(parentWin);
+      sphereEntity->addComponent(squareMesh);
+      sphereEntity->addComponent(square_transform);
+      sphereEntity->addComponent(sphere_material);
     }
+  }
 }
 
 MainWindow::~MainWindow() { delete ui; }
