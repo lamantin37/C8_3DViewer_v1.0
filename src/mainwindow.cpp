@@ -52,6 +52,12 @@ MainWindow::MainWindow(QWidget *parent)
   layout->addWidget(saveModelButton);
   connect(saveModelButton, &QPushButton::clicked, this,
           [=]() { image_render(view); });
+  //  QPushButton* saveScreencastButton = new QPushButton("Save model render",
+  //  this); layout->addWidget(saveScreencastButton);
+  //  connect(saveScreencastButton, &QPushButton::clicked, this,
+  //  &MainWindow::start_gif_render); connect(gifTimer, &QTimer::timeout, this,
+  //  &MainWindow::gif_render);
+  settingsWin = new SettingsWindow(this, transform, parentWin);
 }
 
 void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
@@ -90,10 +96,12 @@ void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
     layout->addWidget(saveSettings);
     settings(view, objInfo);
     connect(saveSettings, &QPushButton::clicked, this, [=]() {
-      settingsWin->save_settings(&re_settings, cameraObj, mesh, object, line_material);
+      settingsWin->save_settings(&re_settings, cameraObj, mesh, object,
+                                 line_material);
     });
     connect(loadSettings, &QPushButton::clicked, this, [=]() {
-      settingsWin->load_settings(&re_settings, cameraObj, mesh, view, object, line_material);
+      settingsWin->load_settings(&re_settings, cameraObj, mesh, view, object,
+                                 line_material, parentWin, objInfo);
     });
   });
 }
@@ -116,7 +124,6 @@ void MainWindow::object_info(s21_object object, const char *filename) {
 void MainWindow::settings(Qt3DExtras::Qt3DWindow *view, s21_object objInfo) {
   layout->addWidget(settingsButton);
   connect(settingsButton, &QPushButton::clicked, this, [=]() {
-    settingsWin = new SettingsWindow(this, transform, parentWin);
     settingsWin->show();
     settingsWin->add_move_sliders(transform);
     settingsWin->add_rotate_sliders(transform);

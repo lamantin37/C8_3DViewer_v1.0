@@ -40,7 +40,10 @@ SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QTransform *transform,
   lineColor = new QPushButton("Change line color", this);
   background_color = QColor(Qt::white);
   line_color = QColor(Qt::black);
+  point_color = QColor(Qt::black);
 
+  point_type = NONE;
+  point_material = new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
   setLayout(layout);
 }
 
@@ -66,15 +69,23 @@ void SettingsWindow::save_settings(
              Qt3DRender::QGeometryRenderer::PrimitiveType::Points) {
     setts->setValue("line type", "points");
   }
-  QColor line_clr = line_material->ambient();
+  QColor line_clr = QColor(Qt::black);
+  if (line_material->ambient() != QColor(Qt::black))
+    line_clr = line_material->ambient();
   setts->setValue("line material", line_clr.name());
+  setts->setValue("point type", point_type);
+  QColor point_clr = QColor(Qt::black);
+  if (point_material->ambient() != QColor(Qt::black))
+    point_clr = point_material->ambient();
+  setts->setValue("point material", point_clr.name());
   setts->sync();
 }
 
 void SettingsWindow::load_settings(
     QSettings *setts, Qt3DRender::QCamera *cameraObj, Qt3DRender::QMesh *mesh,
     Qt3DExtras::Qt3DWindow *view, Qt3DCore::QEntity *object,
-    Qt3DExtras::QDiffuseSpecularMaterial *line_material) {
+    Qt3DExtras::QDiffuseSpecularMaterial *line_material,
+    Qt3DCore::QEntity *parentWin, s21_object objInf) {
   qDebug() << "Load!";
   QString projection = setts->value("projection").toString();
   if (projection == "parallel") {
@@ -95,6 +106,24 @@ void SettingsWindow::load_settings(
   QColor lineMaterial(setts->value("line material").toString());
   line_material->setAmbient(lineMaterial);
   object->addComponent(line_material);
+  int loaded_point_type = setts->value("point type").toInt();
+  qDebug() << loaded_point_type;
+  float radius = 0.03;
+  if (loaded_point_type == NONE) {
+    qDeleteAll(pointEntities);
+    pointEntities.clear();
+  } else if (loaded_point_type == CIRCLE) {
+    qDeleteAll(pointEntities);
+    pointEntities.clear();
+    circle_point(parentWin, objInf, radius);
+
+  } else if (loaded_point_type == SQUARE) {
+    qDeleteAll(pointEntities);
+    pointEntities.clear();
+    square_point(parentWin, objInf, radius);
+  }
+  QColor pointMaterial(setts->value("point material").toString());
+  colorize_point(parentWin, pointMaterial);
   setts->sync();
 }
 
@@ -296,8 +325,9 @@ void SettingsWindow::line_type_settings(Qt3DRender::QMesh *mesh) {
   });
 }
 
-void SettingsWindow::line_color_settings(Qt3DCore::QEntity *parentWin,
-                                         Qt3DCore::QEntity *object, Qt3DExtras::QDiffuseSpecularMaterial *line_material) {
+void SettingsWindow::line_color_settings(
+    Qt3DCore::QEntity *parentWin, Qt3DCore::QEntity *object,
+    Qt3DExtras::QDiffuseSpecularMaterial *line_material) {
   layout->addWidget(lineColor);
   connect(lineColor, &QPushButton::clicked, this, [=]() {
     line_color = QColorDialog::getColor(Qt::white, this, "Choose line color");
@@ -334,32 +364,39 @@ void SettingsWindow::point_settings(Qt3DCore::QEntity *parentWin,
   layout->addLayout(hLayout);
 
   connect(noneTypeRadioButton, &QRadioButton::clicked, this, [=]() {
+    point_type = NONE;
     qDeleteAll(pointEntities);
     pointEntities.clear();
   });
   connect(circleTypeRadioButton, &QRadioButton::clicked, this, [=]() {
+    point_type = CIRCLE;
     qDeleteAll(pointEntities);
     pointEntities.clear();
     circle_point(parentWin, objInf, radius);
   });
   connect(squareTypeRadioButton, &QRadioButton::clicked, this, [=]() {
+    point_type = SQUARE;
     qDeleteAll(pointEntities);
     pointEntities.clear();
     square_point(parentWin, objInf, radius);
   });
   layout->addWidget(pointColor);
   connect(pointColor, &QPushButton::clicked, this, [=]() {
-    QColor color =
-        QColorDialog::getColor(Qt::white, this, "Choose point color");
-    if (color.isValid()) {
-      for (auto &entity : pointEntities) {
-        Qt3DExtras::QDiffuseSpecularMaterial *point_material =
-            new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
-        point_material->setAmbient(color);
-        entity->addComponent(point_material);
-      }
-    }
+    point_color = QColorDialog::getColor(Qt::white, this, "Choose point color");
+    colorize_point(parentWin, point_color);
   });
+}
+
+void SettingsWindow::colorize_point(Qt3DCore::QEntity *parentWin,
+                                    QColor color) {
+  if (color.isValid()) {
+    for (auto &entity : pointEntities) {
+      //      Qt3DExtras::QDiffuseSpecularMaterial *point_material =
+      //          new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
+      point_material->setAmbient(color);
+      entity->addComponent(point_material);
+    }
+  }
 }
 
 void SettingsWindow::circle_point(Qt3DCore::QEntity *parentWin,

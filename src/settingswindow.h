@@ -15,6 +15,9 @@
 #include <Qt3DCore>
 #include <Qt3DExtras>
 #include <Qt3DRender>
+#define NONE 0
+#define CIRCLE 1
+#define SQUARE 2
 
 class SettingsWindow : public QWidget {
   Q_OBJECT
@@ -27,10 +30,12 @@ public:
   void add_scale_slider(Qt3DCore::QTransform *);
   void projection_settings(Qt3DRender::QCamera *, Qt3DExtras::Qt3DWindow *view);
   void line_type_settings(Qt3DRender::QMesh *);
-  void line_color_settings(Qt3DCore::QEntity *, Qt3DCore::QEntity *, Qt3DExtras::QDiffuseSpecularMaterial *);
+  void line_color_settings(Qt3DCore::QEntity *, Qt3DCore::QEntity *,
+                           Qt3DExtras::QDiffuseSpecularMaterial *);
   void background_settings(Qt3DExtras::Qt3DWindow *);
   void circle_point(Qt3DCore::QEntity *, s21_object, float);
   void square_point(Qt3DCore::QEntity *, s21_object, float);
+  void colorize_point(Qt3DCore::QEntity *parentWin, QColor color);
   void point_settings(Qt3DCore::QEntity *, s21_object);
   void removePoints(Qt3DCore::QEntity *parentWin);
   void save_settings(QSettings *, Qt3DRender::QCamera *, Qt3DRender::QMesh *,
@@ -38,7 +43,8 @@ public:
                      Qt3DExtras::QDiffuseSpecularMaterial *);
   void load_settings(QSettings *, Qt3DRender::QCamera *, Qt3DRender::QMesh *,
                      Qt3DExtras::Qt3DWindow *, Qt3DCore::QEntity *,
-                     Qt3DExtras::QDiffuseSpecularMaterial *);
+                     Qt3DExtras::QDiffuseSpecularMaterial *,
+                     Qt3DCore::QEntity *parentWin, s21_object objInf);
 
 private:
   QLabel *label;
@@ -77,6 +83,9 @@ private:
   QColor currentColor = QColor(Qt::black);
   QColor background_color;
   QColor line_color;
+  QColor point_color;
+  int point_type;
+  Qt3DExtras::QDiffuseSpecularMaterial *point_material;
 };
 
 #endif // SETTINGSWINDOW_H
