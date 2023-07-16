@@ -1,7 +1,9 @@
 #ifndef SETTINGSWINDOW_H
 #define SETTINGSWINDOW_H
+#include "auxiliary_modules.h"
 #include <QColorDialog>
 #include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSlider>
@@ -23,6 +25,10 @@ public:
   void line_type_settings(Qt3DRender::QMesh *);
   void line_color_settings(Qt3DCore::QEntity *, Qt3DCore::QEntity *);
   void background_settings(Qt3DExtras::Qt3DWindow *);
+  void circle_point(Qt3DCore::QEntity *, s21_object, float);
+  void square_point(Qt3DCore::QEntity *, s21_object, float);
+  void point_settings(Qt3DCore::QEntity *, s21_object);
+  void removePoints(Qt3DCore::QEntity *parentWin);
 
 private:
   QLabel *label;
@@ -33,7 +39,9 @@ private:
   QLabel *moveXlabel = nullptr;
   QLabel *moveYlabel = nullptr;
   QLabel *moveZlabel = nullptr;
-  QPushButton *showSlidersButton = nullptr;
+  QLineEdit *lineEditX = nullptr;
+  QLineEdit *lineEditY = nullptr;
+  QLineEdit *lineEditZ = nullptr;
 
   QSlider *rotateX = nullptr;
   QSlider *rotateY = nullptr;
@@ -41,7 +49,9 @@ private:
   QLabel *rotateXlabel = nullptr;
   QLabel *rotateYlabel = nullptr;
   QLabel *rotateZlabel = nullptr;
-  QPushButton *showSlidersButton2 = nullptr;
+  QLineEdit *lineEditRX = nullptr;
+  QLineEdit *lineEditRY = nullptr;
+  QLineEdit *lineEditRZ = nullptr;
 
   QSlider *scaleObject = nullptr;
   QLabel *scaleObjectLabel = nullptr;
@@ -52,7 +62,9 @@ private:
   QPushButton *lineColor = nullptr;
   QPushButton *lineType = nullptr;
   QPushButton *pointType = nullptr;
+  QList<Qt3DCore::QEntity *> pointEntities;
+  QPushButton *pointColor = nullptr;
+  QColor currentColor = QColor(Qt::black);
 };
 
 #endif // SETTINGSWINDOW_H
-

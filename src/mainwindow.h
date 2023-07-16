@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "auxiliary_modules.h"
 #include "settingswindow.h"
 #include <QColor>
 #include <QFileDialog>
@@ -27,24 +26,13 @@ class MainWindow : public QMainWindow {
 public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
-  void open_object_file(Qt3DExtras::Qt3DWindow *, Qt3DCore::QEntity *,
-                        QVBoxLayout *, QLineEdit *, QPushButton *);
-  void object_info(s21_object, const char *);
-  void settings(Qt3DExtras::Qt3DWindow *, Qt3DCore::QEntity *, QVBoxLayout *);
-  void projection_settings(QVBoxLayout *);
-  void edges_settings(Qt3DCore::QEntity *, QVBoxLayout *);
-  void vertecies_settings(QVBoxLayout *);
-  void display_circles(Qt3DRender::QMesh::Status status);
-  void background_settings(Qt3DExtras::Qt3DWindow *, QVBoxLayout *);
-  void line_color_settings(Qt3DExtras::Qt3DWindow *, QVBoxLayout *);
-  void line_type_settings(QVBoxLayout *);
-  void create_primitive_around_vertex(Qt3DCore::QEntity *rootEntity,
-                                      Qt3DRender::QGeometry *geometry,
-                                      const QString &primitiveType, float size);
+  void open_object_file(Qt3DExtras::Qt3DWindow *, QLineEdit *,
+                        QPushButton *);                //
+  void object_info(s21_object, const char *);          //
+  void settings(Qt3DExtras::Qt3DWindow *, s21_object); //
+
   void image_render(Qt3DExtras::Qt3DWindow *);
-  void circle_point(s21_object, float);
-  void square_point(s21_object, float);
-  int start_parsing(const char *);
+  s21_object start_parsing(const char *);
   void record();
 
 private:

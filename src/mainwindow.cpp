@@ -47,13 +47,11 @@ MainWindow::MainWindow(QWidget *parent)
 
   object = new Qt3DCore::QEntity(parentWin);
   // открытие файла и его загрузка
-  open_object_file(view, object, layout, lineEdit, button);
+  open_object_file(view, lineEdit, button);
 }
 
 void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
-                                  Qt3DCore::QEntity *object,
-                                  QVBoxLayout *layout, QLineEdit *lineEdit,
-                                  QPushButton *button) {
+                                  QLineEdit *lineEdit, QPushButton *button) {
   connect(button, &QPushButton::clicked, this, [=]() {
     QString filename = QFileDialog::getOpenFileName(this, "Open a file", "",
                                                     "Obj Files (*.obj)");
@@ -80,9 +78,9 @@ void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
     object->addComponent(mesh);
     transform = new Qt3DCore::QTransform();
     object->addComponent(transform);
-    settings(view, object, layout);
     const char *charstring = qPrintable(filename);
-    start_parsing(charstring);
+    s21_object objInfo = start_parsing(charstring);
+    settings(view, objInfo);
   });
 }
 
@@ -101,8 +99,7 @@ void MainWindow::object_info(s21_object object, const char *filename) {
   layout->addWidget(polygonsLabel);
 }
 
-void MainWindow::settings(Qt3DExtras::Qt3DWindow *view,
-                          Qt3DCore::QEntity *object, QVBoxLayout *layout) {
+void MainWindow::settings(Qt3DExtras::Qt3DWindow *view, s21_object objInfo) {
   layout->addWidget(settingsButton);
   connect(settingsButton, &QPushButton::clicked, this, [=]() {
     settingsWin = new SettingsWindow(this, transform);
@@ -113,17 +110,18 @@ void MainWindow::settings(Qt3DExtras::Qt3DWindow *view,
     settingsWin->projection_settings(cameraObj);
     settingsWin->line_color_settings(parentWin, object);
     settingsWin->line_type_settings(mesh);
-        settingsWin->background_settings(view);
+    settingsWin->background_settings(view);
+    settingsWin->point_settings(parentWin, object, objInfo);
   });
 }
 
-int MainWindow::start_parsing(const char *filename) {
+s21_object MainWindow::start_parsing(const char *filename) {
   FILE *fp;
   int num_of_vert = 0;
+  s21_object object;
   if ((fp = fopen(filename, "r")) == NULL) {
     printf("Error opening file\n");
   } else {
-    s21_object object;
     object.polygons = NULL;
     object.num_of_polygons = 0;
     object.num_of_vertices = 0;
@@ -134,53 +132,7 @@ int MainWindow::start_parsing(const char *filename) {
     object_parser(fp, &object, &vertex, num_of_vert);
     object_info(object, filename);
   }
-  return num_of_vert;
-}
-
-void MainWindow::circle_point(s21_object object, float radius) {
-  for (int i = 0; i < object.num_of_polygons; i++) {
-    for (int j = 0; j < POLYGON_SIZE; j++) {
-      Qt3DExtras::QCylinderMesh *circleMesh =
-          new Qt3DExtras::QCylinderMesh(parentWin);
-      circleMesh->setRadius(radius);
-      circleMesh->setLength(0);
-      Qt3DCore::QTransform *sphere_transform =
-          new Qt3DCore::QTransform(parentWin);
-      float xpos = object.polygons[i].vertices[j].x;
-      float ypos = object.polygons[i].vertices[j].y;
-      float zpos = object.polygons[i].vertices[j].z;
-      sphere_transform->setTranslation(QVector3D(xpos, ypos, zpos));
-      Qt3DExtras::QPhongMaterial *sphere_material =
-          new Qt3DExtras::QPhongMaterial(parentWin);
-      Qt3DCore::QEntity *sphereEntity = new Qt3DCore::QEntity(parentWin);
-      sphereEntity->addComponent(circleMesh);
-      sphereEntity->addComponent(sphere_transform);
-      sphereEntity->addComponent(sphere_material);
-    }
-  }
-}
-
-void MainWindow::square_point(s21_object object, float side) {
-  for (int i = 0; i < object.num_of_polygons; i++) {
-    for (int j = 0; j < POLYGON_SIZE; j++) {
-      Qt3DExtras::QPlaneMesh *squareMesh =
-          new Qt3DExtras::QPlaneMesh(parentWin);
-      squareMesh->setWidth(side);
-      squareMesh->setHeight(side);
-      Qt3DCore::QTransform *square_transform =
-          new Qt3DCore::QTransform(parentWin);
-      float xpos = object.polygons[i].vertices[j].x;
-      float ypos = object.polygons[i].vertices[j].y;
-      float zpos = object.polygons[i].vertices[j].z;
-      square_transform->setTranslation(QVector3D(xpos, ypos, zpos));
-      Qt3DExtras::QPhongMaterial *sphere_material =
-          new Qt3DExtras::QPhongMaterial(parentWin);
-      Qt3DCore::QEntity *sphereEntity = new Qt3DCore::QEntity(parentWin);
-      sphereEntity->addComponent(squareMesh);
-      sphereEntity->addComponent(square_transform);
-      sphereEntity->addComponent(sphere_material);
-    }
-  }
+  return object;
 }
 
 MainWindow::~MainWindow() { delete ui; }
