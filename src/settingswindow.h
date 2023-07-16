@@ -12,6 +12,8 @@
 #include <Qt3DCore>
 #include <Qt3DExtras>
 #include <Qt3DRender>
+#include <QFileDialog>
+#include <QApplication>
 
 class SettingsWindow : public QWidget {
   Q_OBJECT
@@ -29,7 +31,6 @@ public:
   void square_point(Qt3DCore::QEntity *, s21_object, float);
   void point_settings(Qt3DCore::QEntity *, s21_object);
   void removePoints(Qt3DCore::QEntity *parentWin);
-
 private:
   QLabel *label;
   QVBoxLayout *layout = nullptr;

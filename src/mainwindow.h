@@ -31,8 +31,8 @@ public:
   void object_info(s21_object, const char *);          //
   void settings(Qt3DExtras::Qt3DWindow *, s21_object); //
 
-  void image_render(Qt3DExtras::Qt3DWindow *);
   s21_object start_parsing(const char *);
+  void image_render(Qt3DExtras::Qt3DWindow *view);
   void record();
 
 private:
@@ -48,5 +48,8 @@ private:
   QPushButton *settingsButton = nullptr;
   Qt3DRender::QRenderCapture *capture;
   SettingsWindow *settingsWin;
+  Qt3DRender::QRenderCaptureReply *captureReply;
+  Qt3DExtras::Qt3DWindow *view;
+  QWidget *widget;
 };
 #endif // MAINWINDOW_H

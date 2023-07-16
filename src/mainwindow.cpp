@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-
+#include <Qt3DRender/QRenderCapture>
 #include "./ui_mainwindow.h"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -8,12 +8,12 @@ MainWindow::MainWindow(QWidget *parent)
   ui->setupUi(this);
   parentWin = new Qt3DCore::QEntity(); // конктруктор корневого окна
   parentWin->setObjectName("Root window");
-  Qt3DExtras::Qt3DWindow *view =
+  view =
       new Qt3DExtras::Qt3DWindow(); // создаем окно для отображения сцены
 
   view->defaultFrameGraph()->setClearColor(QRgb(0xffffff)); // стандартный фон
   view->setRootEntity(parentWin); // устанавливаем корневое окно
-  QWidget *widget = QWidget::createWindowContainer(
+  widget = QWidget::createWindowContainer(
       view); // встраивание виджета view в окно приложения
   widget->setMinimumSize(QSize(100, 100));
   QSize screenSize = view->screen()->size(); // получение размера окна
@@ -48,6 +48,11 @@ MainWindow::MainWindow(QWidget *parent)
   object = new Qt3DCore::QEntity(parentWin);
   // открытие файла и его загрузка
   open_object_file(view, lineEdit, button);
+  QPushButton* saveButton = new QPushButton("Save model render", this);
+  layout->addWidget(saveButton);
+  connect(saveButton, &QPushButton::clicked, this, [=](){
+    image_render(view);
+  });
 }
 
 void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
@@ -111,8 +116,22 @@ void MainWindow::settings(Qt3DExtras::Qt3DWindow *view, s21_object objInfo) {
     settingsWin->line_color_settings(parentWin, object);
     settingsWin->line_type_settings(mesh);
     settingsWin->background_settings(view);
-    settingsWin->point_settings(parentWin, object, objInfo);
+    settingsWin->point_settings(parentWin, objInfo);
   });
+}
+
+void MainWindow::image_render(Qt3DExtras::Qt3DWindow *view) {
+    QString filename;
+    QScreen *screen = view->screen();
+    QPixmap screenshot = screen->grabWindow(view->winId());
+
+    if (!screenshot.isNull()) {
+        filename = QFileDialog::getSaveFileName(this, "Save Image", "",
+                                                "JPEG Files (*.jpeg *.jpg);;BMP Files (*.bmp)");
+    }
+    if (!filename.isEmpty()) {
+        screenshot.save(filename);
+    }
 }
 
 s21_object MainWindow::start_parsing(const char *filename) {
@@ -131,6 +150,8 @@ s21_object MainWindow::start_parsing(const char *filename) {
     num_of_vert = parser_counter(fp, &object);
     object_parser(fp, &object, &vertex, num_of_vert);
     object_info(object, filename);
+    //    square_point(object, 0.03);
+    //    printPolygon(&object);
   }
   return object;
 }
