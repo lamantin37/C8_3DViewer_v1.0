@@ -1,16 +1,15 @@
 #include "mainwindow.h"
-#include <Qt3DRender/QRenderCapture>
 #include "./ui_mainwindow.h"
+#include <Qt3DRender/QRenderCapture>
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow) {
+    : QMainWindow(parent), ui(new Ui::MainWindow),
+      re_settings("School 21", "3DViewer") {
   settingsButton = new QPushButton("Settings", this);
 
   ui->setupUi(this);
   parentWin = new Qt3DCore::QEntity(); // конктруктор корневого окна
   parentWin->setObjectName("Root window");
-  view =
-      new Qt3DExtras::Qt3DWindow(); // создаем окно для отображения сцены
-
+  view = new Qt3DExtras::Qt3DWindow(); // создаем окно для отображения сцены
   view->defaultFrameGraph()->setClearColor(QRgb(0xffffff)); // стандартный фон
   view->setRootEntity(parentWin); // устанавливаем корневое окно
   widget = QWidget::createWindowContainer(
@@ -38,7 +37,8 @@ MainWindow::MainWindow(QWidget *parent)
       QVector3D(0, 2, 0)); // позиция камеры в трехмерном пространстве
   cameraObj->setUpVector(QVector3D(0, 0, 1)); // вектор верха камеры (x, y, z)
   cameraObj->setViewCenter(QVector3D(1, 0, 0)); // центр обзора камеры
-
+  line_material = new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
+  line_material->setAmbient(QColor(Qt::black));
   Qt3DExtras::QOrbitCameraController *cameraController =
       new Qt3DExtras::QOrbitCameraController(parentWin);
   cameraController->setCamera(cameraObj);
@@ -48,11 +48,10 @@ MainWindow::MainWindow(QWidget *parent)
   object = new Qt3DCore::QEntity(parentWin);
   // открытие файла и его загрузка
   open_object_file(view, lineEdit, button);
-  QPushButton* saveButton = new QPushButton("Save model render", this);
-  layout->addWidget(saveButton);
-  connect(saveButton, &QPushButton::clicked, this, [=](){
-    image_render(view);
-  });
+  QPushButton *saveModelButton = new QPushButton("Save model render", this);
+  layout->addWidget(saveModelButton);
+  connect(saveModelButton, &QPushButton::clicked, this,
+          [=]() { image_render(view); });
 }
 
 void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
@@ -85,7 +84,17 @@ void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
     object->addComponent(transform);
     const char *charstring = qPrintable(filename);
     s21_object objInfo = start_parsing(charstring);
+    QPushButton *loadSettings = new QPushButton("Load settings", this);
+    QPushButton *saveSettings = new QPushButton("Save settings", this);
+    layout->addWidget(loadSettings);
+    layout->addWidget(saveSettings);
     settings(view, objInfo);
+    connect(saveSettings, &QPushButton::clicked, this, [=]() {
+      settingsWin->save_settings(&re_settings, cameraObj, mesh, object, line_material);
+    });
+    connect(loadSettings, &QPushButton::clicked, this, [=]() {
+      settingsWin->load_settings(&re_settings, cameraObj, mesh, view, object, line_material);
+    });
   });
 }
 
@@ -107,13 +116,13 @@ void MainWindow::object_info(s21_object object, const char *filename) {
 void MainWindow::settings(Qt3DExtras::Qt3DWindow *view, s21_object objInfo) {
   layout->addWidget(settingsButton);
   connect(settingsButton, &QPushButton::clicked, this, [=]() {
-    settingsWin = new SettingsWindow(this, transform);
+    settingsWin = new SettingsWindow(this, transform, parentWin);
     settingsWin->show();
     settingsWin->add_move_sliders(transform);
     settingsWin->add_rotate_sliders(transform);
     settingsWin->add_scale_slider(transform);
-    settingsWin->projection_settings(cameraObj);
-    settingsWin->line_color_settings(parentWin, object);
+    settingsWin->projection_settings(cameraObj, view);
+    settingsWin->line_color_settings(parentWin, object, line_material);
     settingsWin->line_type_settings(mesh);
     settingsWin->background_settings(view);
     settingsWin->point_settings(parentWin, objInfo);
@@ -121,17 +130,17 @@ void MainWindow::settings(Qt3DExtras::Qt3DWindow *view, s21_object objInfo) {
 }
 
 void MainWindow::image_render(Qt3DExtras::Qt3DWindow *view) {
-    QString filename;
-    QScreen *screen = view->screen();
-    QPixmap screenshot = screen->grabWindow(view->winId());
+  QString filename;
+  QScreen *screen = view->screen();
+  QPixmap screenshot = screen->grabWindow(view->winId());
 
-    if (!screenshot.isNull()) {
-        filename = QFileDialog::getSaveFileName(this, "Save Image", "",
-                                                "JPEG Files (*.jpeg *.jpg);;BMP Files (*.bmp)");
-    }
-    if (!filename.isEmpty()) {
-        screenshot.save(filename);
-    }
+  if (!screenshot.isNull()) {
+    filename = QFileDialog::getSaveFileName(
+        this, "Save Image", "", "JPEG Files (*.jpeg *.jpg);;BMP Files (*.bmp)");
+  }
+  if (!filename.isEmpty()) {
+    screenshot.save(filename);
+  }
 }
 
 s21_object MainWindow::start_parsing(const char *filename) {

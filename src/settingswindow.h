@@ -1,36 +1,45 @@
 #ifndef SETTINGSWINDOW_H
 #define SETTINGSWINDOW_H
 #include "auxiliary_modules.h"
+#include <QApplication>
 #include <QColorDialog>
+#include <QFileDialog>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QSettings>
 #include <QSlider>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <Qt3DCore>
 #include <Qt3DExtras>
 #include <Qt3DRender>
-#include <QFileDialog>
-#include <QApplication>
 
 class SettingsWindow : public QWidget {
   Q_OBJECT
 public:
   explicit SettingsWindow(QWidget *parent = nullptr,
-                          Qt3DCore::QTransform *transform = nullptr);
+                          Qt3DCore::QTransform *transform = nullptr,
+                          Qt3DCore::QEntity *parentWin = nullptr);
   void add_move_sliders(Qt3DCore::QTransform *);
   void add_rotate_sliders(Qt3DCore::QTransform *);
   void add_scale_slider(Qt3DCore::QTransform *);
-  void projection_settings(Qt3DRender::QCamera *);
+  void projection_settings(Qt3DRender::QCamera *, Qt3DExtras::Qt3DWindow *view);
   void line_type_settings(Qt3DRender::QMesh *);
-  void line_color_settings(Qt3DCore::QEntity *, Qt3DCore::QEntity *);
+  void line_color_settings(Qt3DCore::QEntity *, Qt3DCore::QEntity *, Qt3DExtras::QDiffuseSpecularMaterial *);
   void background_settings(Qt3DExtras::Qt3DWindow *);
   void circle_point(Qt3DCore::QEntity *, s21_object, float);
   void square_point(Qt3DCore::QEntity *, s21_object, float);
   void point_settings(Qt3DCore::QEntity *, s21_object);
   void removePoints(Qt3DCore::QEntity *parentWin);
+  void save_settings(QSettings *, Qt3DRender::QCamera *, Qt3DRender::QMesh *,
+                     Qt3DCore::QEntity *,
+                     Qt3DExtras::QDiffuseSpecularMaterial *);
+  void load_settings(QSettings *, Qt3DRender::QCamera *, Qt3DRender::QMesh *,
+                     Qt3DExtras::Qt3DWindow *, Qt3DCore::QEntity *,
+                     Qt3DExtras::QDiffuseSpecularMaterial *);
+
 private:
   QLabel *label;
   QVBoxLayout *layout = nullptr;
@@ -66,6 +75,8 @@ private:
   QList<Qt3DCore::QEntity *> pointEntities;
   QPushButton *pointColor = nullptr;
   QColor currentColor = QColor(Qt::black);
+  QColor background_color;
+  QColor line_color;
 };
 
 #endif // SETTINGSWINDOW_H

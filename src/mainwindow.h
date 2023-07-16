@@ -4,10 +4,13 @@
 #include "settingswindow.h"
 #include <QColor>
 #include <QFileDialog>
+#include <QImageWriter>
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QMesh>
 #include <QScreen>
+//#include
+//#include "3rdParty/QtGifImage/src/gifimage/qgifimage.h"
 
 extern "C" int start_parsing();
 extern "C" void object_parser(FILE *, s21_object *, s21_vertex *, int);
@@ -33,7 +36,9 @@ public:
 
   s21_object start_parsing(const char *);
   void image_render(Qt3DExtras::Qt3DWindow *view);
-  void record();
+  //  void gif_render();
+  //  void start_gif_render();
+  //  void stop_gif_render();
 
 private:
   Ui::MainWindow *ui;
@@ -51,5 +56,11 @@ private:
   Qt3DRender::QRenderCaptureReply *captureReply;
   Qt3DExtras::Qt3DWindow *view;
   QWidget *widget;
+  QSettings re_settings;
+  Qt3DExtras::QDiffuseSpecularMaterial *line_material;
+  //  QList<QPixmap> frames;
+  //  QTimer* gifTimer;
+  //  QTimer *countdownTimer;
+  //  QGifImage gif;
 };
 #endif // MAINWINDOW_H

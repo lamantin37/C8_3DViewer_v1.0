@@ -1,6 +1,7 @@
 #include "settingswindow.h"
 
-SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QTransform *transform)
+SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QTransform *transform,
+                               Qt3DCore::QEntity *parentWin)
     : QWidget(parent) {
   setWindowFlags(Qt::Window);
   setFixedSize(QSize(400, 600));
@@ -37,7 +38,64 @@ SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QTransform *transform)
   backgroundColor = new QPushButton("Change background color", this);
   pointColor = new QPushButton("Change point color", this);
   lineColor = new QPushButton("Change line color", this);
+  background_color = QColor(Qt::white);
+  line_color = QColor(Qt::black);
+
   setLayout(layout);
+}
+
+void SettingsWindow::save_settings(
+    QSettings *setts, Qt3DRender::QCamera *cameraObj, Qt3DRender::QMesh *mesh,
+    Qt3DCore::QEntity *object,
+    Qt3DExtras::QDiffuseSpecularMaterial *line_material) {
+  qDebug() << "Save!";
+  Qt3DRender::QCameraLens *lens = cameraObj->lens();
+  Qt3DRender::QCameraLens::ProjectionType projectionType =
+      lens->projectionType();
+  if (projectionType == Qt3DRender::QCameraLens::PerspectiveProjection) {
+    setts->setValue("projection", "parallel");
+  } else if (projectionType ==
+             Qt3DRender::QCameraLens::OrthographicProjection) {
+    setts->setValue("projection", "central");
+  }
+  Qt3DRender::QGeometryRenderer::PrimitiveType primitiveType =
+      mesh->primitiveType();
+  if (primitiveType == Qt3DRender::QGeometryRenderer::PrimitiveType::Lines) {
+    setts->setValue("line type", "lines");
+  } else if (primitiveType ==
+             Qt3DRender::QGeometryRenderer::PrimitiveType::Points) {
+    setts->setValue("line type", "points");
+  }
+  QColor line_clr = line_material->ambient();
+  setts->setValue("line material", line_clr.name());
+  setts->sync();
+}
+
+void SettingsWindow::load_settings(
+    QSettings *setts, Qt3DRender::QCamera *cameraObj, Qt3DRender::QMesh *mesh,
+    Qt3DExtras::Qt3DWindow *view, Qt3DCore::QEntity *object,
+    Qt3DExtras::QDiffuseSpecularMaterial *line_material) {
+  qDebug() << "Load!";
+  QString projection = setts->value("projection").toString();
+  if (projection == "parallel") {
+    float aspectRatio = float(view->width()) / view->height();
+    cameraObj->lens()->setPerspectiveProjection(45.0f, aspectRatio, 0.1f,
+                                                10000.0f);
+  } else if (projection == "central") {
+    float aspectRatio = float(view->width()) / view->height();
+    cameraObj->lens()->setOrthographicProjection(-aspectRatio, aspectRatio,
+                                                 -1.0, 1.0, 0.1f, 10000.0f);
+  }
+  QString primType = setts->value("line type").toString();
+  if (primType == "lines") {
+    mesh->setPrimitiveType(Qt3DRender::QGeometryRenderer::Lines);
+  } else if (primType == "points") {
+    mesh->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
+  }
+  QColor lineMaterial(setts->value("line material").toString());
+  line_material->setAmbient(lineMaterial);
+  object->addComponent(line_material);
+  setts->sync();
 }
 
 void SettingsWindow::add_move_sliders(Qt3DCore::QTransform *transform) {
@@ -195,7 +253,8 @@ void SettingsWindow::add_scale_slider(Qt3DCore::QTransform *transform) {
   });
 }
 
-void SettingsWindow::projection_settings(Qt3DRender::QCamera *cameraObj) {
+void SettingsWindow::projection_settings(Qt3DRender::QCamera *cameraObj,
+                                         Qt3DExtras::Qt3DWindow *view) {
   QLabel *projLabel = new QLabel("Select projection:", this);
   QRadioButton *parallelProjectionRadioButton =
       new QRadioButton("Parallel projection", this);
@@ -208,13 +267,13 @@ void SettingsWindow::projection_settings(Qt3DRender::QCamera *cameraObj) {
   layout->addLayout(hLayout);
 
   connect(parallelProjectionRadioButton, &QRadioButton::clicked, this, [=]() {
-    float aspectRatio = float(window()->width()) / window()->height();
+    float aspectRatio = float(view->width()) / view->height();
     cameraObj->lens()->setPerspectiveProjection(45.0f, aspectRatio, 0.1f,
                                                 10000.0f);
   });
 
   connect(centralProjectionRadioButton, &QRadioButton::clicked, this, [=]() {
-    float aspectRatio = float(window()->width()) / window()->height();
+    float aspectRatio = float(view->width()) / view->height();
     cameraObj->lens()->setOrthographicProjection(-aspectRatio, aspectRatio,
                                                  -1.0, 1.0, 0.1f, 10000.0f);
   });
@@ -238,14 +297,12 @@ void SettingsWindow::line_type_settings(Qt3DRender::QMesh *mesh) {
 }
 
 void SettingsWindow::line_color_settings(Qt3DCore::QEntity *parentWin,
-                                         Qt3DCore::QEntity *object) {
+                                         Qt3DCore::QEntity *object, Qt3DExtras::QDiffuseSpecularMaterial *line_material) {
   layout->addWidget(lineColor);
   connect(lineColor, &QPushButton::clicked, this, [=]() {
-    QColor color = QColorDialog::getColor(Qt::white, this, "Choose line color");
-    if (color.isValid()) {
-      Qt3DExtras::QDiffuseSpecularMaterial *line_material =
-          new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
-      line_material->setAmbient(color);
+    line_color = QColorDialog::getColor(Qt::white, this, "Choose line color");
+    if (line_color.isValid()) {
+      line_material->setAmbient(line_color);
       object->addComponent(line_material);
     }
   });
@@ -254,10 +311,10 @@ void SettingsWindow::line_color_settings(Qt3DCore::QEntity *parentWin,
 void SettingsWindow::background_settings(Qt3DExtras::Qt3DWindow *view) {
   layout->addWidget(backgroundColor);
   connect(backgroundColor, &QPushButton::clicked, this, [=]() {
-    QColor color =
+    background_color =
         QColorDialog::getColor(Qt::white, this, "Choose background color");
-    if (color.isValid()) {
-      view->defaultFrameGraph()->setClearColor(QColor(color));
+    if (background_color.isValid()) {
+      view->defaultFrameGraph()->setClearColor(QColor(background_color));
     }
   });
 }
