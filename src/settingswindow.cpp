@@ -44,6 +44,9 @@ SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QTransform *transform,
 
   point_type = NONE;
   point_material = new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
+  lineEditRadius = new QLineEdit("Set radius", this);
+  lineEditRadius->setValidator(new QDoubleValidator(this));
+  radius = 0.03;
   setLayout(layout);
 }
 
@@ -351,7 +354,6 @@ void SettingsWindow::background_settings(Qt3DExtras::Qt3DWindow *view) {
 
 void SettingsWindow::point_settings(Qt3DCore::QEntity *parentWin,
                                     s21_object objInf) {
-  float radius = 0.03;
   QLabel *typeLabel = new QLabel("Select point type:", this);
   QRadioButton *noneTypeRadioButton = new QRadioButton("None", this);
   QRadioButton *circleTypeRadioButton = new QRadioButton("Circle", this);
@@ -362,7 +364,9 @@ void SettingsWindow::point_settings(Qt3DCore::QEntity *parentWin,
   hLayout->addWidget(squareTypeRadioButton);
   layout->addWidget(typeLabel);
   layout->addLayout(hLayout);
-
+  layout->addWidget(lineEditRadius);
+  connect(lineEditRadius, &QLineEdit::returnPressed, this,
+          [=]() { onRadiusReturnPressed(parentWin, objInf); });
   connect(noneTypeRadioButton, &QRadioButton::clicked, this, [=]() {
     point_type = NONE;
     qDeleteAll(pointEntities);
@@ -385,6 +389,21 @@ void SettingsWindow::point_settings(Qt3DCore::QEntity *parentWin,
     point_color = QColorDialog::getColor(Qt::white, this, "Choose point color");
     colorize_point(parentWin, point_color);
   });
+}
+
+void SettingsWindow::onRadiusReturnPressed(Qt3DCore::QEntity *parentWin,
+                                           s21_object objInf) {
+  radius = lineEditRadius->text().toFloat();
+  qDebug() << "Radius" << radius;
+  if (point_type == CIRCLE) {
+    qDeleteAll(pointEntities);
+    pointEntities.clear();
+    circle_point(parentWin, objInf, radius);
+  } else if (point_type == SQUARE) {
+    qDeleteAll(pointEntities);
+    pointEntities.clear();
+    square_point(parentWin, objInf, radius);
+  }
 }
 
 void SettingsWindow::colorize_point(Qt3DCore::QEntity *parentWin,

@@ -52,11 +52,6 @@ MainWindow::MainWindow(QWidget *parent)
   layout->addWidget(saveModelButton);
   connect(saveModelButton, &QPushButton::clicked, this,
           [=]() { image_render(view); });
-  //  QPushButton* saveScreencastButton = new QPushButton("Save model render",
-  //  this); layout->addWidget(saveScreencastButton);
-  //  connect(saveScreencastButton, &QPushButton::clicked, this,
-  //  &MainWindow::start_gif_render); connect(gifTimer, &QTimer::timeout, this,
-  //  &MainWindow::gif_render);
   settingsWin = new SettingsWindow(this, transform, parentWin);
 }
 
@@ -75,14 +70,8 @@ void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
     mesh->setPrimitiveType(
         Qt3DRender::QGeometryRenderer::Lines); // Установка режима отображения
                                                // каркаса
-
     Qt3DExtras::QPerVertexColorMaterial *material =
         new Qt3DExtras::QPerVertexColorMaterial(parentWin);
-    Qt3DRender::QRenderStateSet *renderStateSet =
-        new Qt3DRender::QRenderStateSet(parentWin);
-    Qt3DRender::QLineWidth *lineWidth =
-        new Qt3DRender::QLineWidth(renderStateSet);
-    lineWidth->setValue(120);
 
     object->addComponent(material);
     object->addComponent(mesh);
@@ -166,8 +155,6 @@ s21_object MainWindow::start_parsing(const char *filename) {
     num_of_vert = parser_counter(fp, &object);
     object_parser(fp, &object, &vertex, num_of_vert);
     object_info(object, filename);
-    //    square_point(object, 0.03);
-    //    printPolygon(&object);
   }
   return object;
 }

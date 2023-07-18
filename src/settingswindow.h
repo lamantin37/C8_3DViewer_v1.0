@@ -45,6 +45,7 @@ public:
                      Qt3DExtras::Qt3DWindow *, Qt3DCore::QEntity *,
                      Qt3DExtras::QDiffuseSpecularMaterial *,
                      Qt3DCore::QEntity *parentWin, s21_object objInf);
+  void onRadiusReturnPressed(Qt3DCore::QEntity *parentWin, s21_object objInf);
 
 private:
   QLabel *label;
@@ -85,6 +86,8 @@ private:
   QColor line_color;
   QColor point_color;
   int point_type;
+  QLineEdit *lineEditRadius = nullptr;
+  float radius;
   Qt3DExtras::QDiffuseSpecularMaterial *point_material;
 };
 
