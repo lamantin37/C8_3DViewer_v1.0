@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "settingswindow.h"
 #include <QColor>
 #include <QFileDialog>
 #include <QImageWriter>
@@ -9,8 +8,8 @@
 #include <QMainWindow>
 #include <QMesh>
 #include <QScreen>
-//#include
-//#include "3rdParty/QtGifImage/src/gifimage/qgifimage.h"
+
+#include "settingswindow.h"
 
 extern "C" int start_parsing();
 extern "C" void object_parser(FILE *, s21_object *, s21_vertex *, int);
@@ -26,26 +25,23 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow {
   Q_OBJECT
 
-public:
+ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
   void open_object_file(Qt3DExtras::Qt3DWindow *, QLineEdit *,
-                        QPushButton *);                //
-  void object_info(s21_object, const char *);          //
-  void settings(Qt3DExtras::Qt3DWindow *, s21_object); //
+                        QPushButton *);                 //
+  void object_info(s21_object, const char *);           //
+  void settings(Qt3DExtras::Qt3DWindow *, s21_object);  //
 
   s21_object start_parsing(const char *);
   void image_render(Qt3DExtras::Qt3DWindow *view);
-  //  void gif_render();
-  //  void start_gif_render();
-  //  void stop_gif_render();
 
-private:
+ private:
   Ui::MainWindow *ui;
-  Qt3DCore::QEntity *parentWin = nullptr;   // корневое окно
-  Qt3DRender::QCamera *cameraObj = nullptr; // камера
-  Qt3DCore::QEntity *sceneLoader = nullptr; // базовая сущность
-  Qt3DRender::QSceneLoader *loader = nullptr; // для загрузки файлов
+  Qt3DCore::QEntity *parentWin = nullptr;    // корневое окно
+  Qt3DRender::QCamera *cameraObj = nullptr;  // камера
+  Qt3DCore::QEntity *sceneLoader = nullptr;  // базовая сущность
+  Qt3DRender::QSceneLoader *loader = nullptr;  // для загрузки файлов
   Qt3DRender::QMesh *mesh = nullptr;
   Qt3DCore::QEntity *object = nullptr;
   Qt3DCore::QTransform *transform = nullptr;
@@ -58,9 +54,6 @@ private:
   QWidget *widget;
   QSettings re_settings;
   Qt3DExtras::QDiffuseSpecularMaterial *line_material;
-  //  QList<QPixmap> frames;
-  //  QTimer* gifTimer;
-  //  QTimer *countdownTimer;
-  //  QGifImage gif;
+  s21_object objInfo;
 };
-#endif // MAINWINDOW_H
+#endif  // MAINWINDOW_H

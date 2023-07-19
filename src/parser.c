@@ -1,5 +1,6 @@
-#include "auxiliary_modules.h"
 #include <stdio.h>
+
+#include "auxiliary_modules.h"
 int parser_counter(FILE *fp, s21_object *object) {
   char line[256];
   while (fgets(line, sizeof(line), fp)) {

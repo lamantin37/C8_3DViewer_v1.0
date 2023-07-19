@@ -1,6 +1,5 @@
 #ifndef SETTINGSWINDOW_H
 #define SETTINGSWINDOW_H
-#include "auxiliary_modules.h"
 #include <QApplication>
 #include <QColorDialog>
 #include <QFileDialog>
@@ -15,13 +14,15 @@
 #include <Qt3DCore>
 #include <Qt3DExtras>
 #include <Qt3DRender>
+
+#include "auxiliary_modules.h"
 #define NONE 0
 #define CIRCLE 1
 #define SQUARE 2
 
 class SettingsWindow : public QWidget {
   Q_OBJECT
-public:
+ public:
   explicit SettingsWindow(QWidget *parent = nullptr,
                           Qt3DCore::QTransform *transform = nullptr,
                           Qt3DCore::QEntity *parentWin = nullptr);
@@ -40,14 +41,15 @@ public:
   void removePoints(Qt3DCore::QEntity *parentWin);
   void save_settings(QSettings *, Qt3DRender::QCamera *, Qt3DRender::QMesh *,
                      Qt3DCore::QEntity *,
-                     Qt3DExtras::QDiffuseSpecularMaterial *);
+                     Qt3DExtras::QDiffuseSpecularMaterial *,
+                     Qt3DExtras::Qt3DWindow *);
   void load_settings(QSettings *, Qt3DRender::QCamera *, Qt3DRender::QMesh *,
                      Qt3DExtras::Qt3DWindow *, Qt3DCore::QEntity *,
                      Qt3DExtras::QDiffuseSpecularMaterial *,
                      Qt3DCore::QEntity *parentWin, s21_object objInf);
   void onRadiusReturnPressed(Qt3DCore::QEntity *parentWin, s21_object objInf);
 
-private:
+ private:
   QLabel *label;
   QVBoxLayout *layout = nullptr;
   QSlider *moveX = nullptr;
@@ -91,4 +93,4 @@ private:
   Qt3DExtras::QDiffuseSpecularMaterial *point_material;
 };
 
-#endif // SETTINGSWINDOW_H
+#endif  // SETTINGSWINDOW_H

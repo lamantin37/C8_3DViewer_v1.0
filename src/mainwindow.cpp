@@ -1,49 +1,52 @@
 #include "mainwindow.h"
-#include "./ui_mainwindow.h"
+
 #include <Qt3DRender/QRenderCapture>
+
+#include "./ui_mainwindow.h"
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow),
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow),
       re_settings("School 21", "3DViewer") {
   settingsButton = new QPushButton("Settings", this);
 
   ui->setupUi(this);
-  parentWin = new Qt3DCore::QEntity(); // конктруктор корневого окна
+  parentWin = new Qt3DCore::QEntity();  // конктруктор корневого окна
   parentWin->setObjectName("Root window");
-  view = new Qt3DExtras::Qt3DWindow(); // создаем окно для отображения сцены
-  view->defaultFrameGraph()->setClearColor(QRgb(0xffffff)); // стандартный фон
-  view->setRootEntity(parentWin); // устанавливаем корневое окно
+  view = new Qt3DExtras::Qt3DWindow();  // создаем окно для отображения сцены
+  view->defaultFrameGraph()->setClearColor(QRgb(0xffffff));  // стандартный фон
+  view->setRootEntity(parentWin);  // устанавливаем корневое окно
   widget = QWidget::createWindowContainer(
-      view); // встраивание виджета view в окно приложения
+      view);  // встраивание виджета view в окно приложения
   widget->setMinimumSize(QSize(100, 100));
-  QSize screenSize = view->screen()->size(); // получение размера окна
-  widget->setMaximumSize(screenSize); // и установка его как максимального
+  QSize screenSize = view->screen()->size();  // получение размера окна
+  widget->setMaximumSize(screenSize);  // и установка его как максимального
   widget->setFocusPolicy(Qt::NoFocus);
   QPushButton *button = new QPushButton("Choose file", this);
   QLineEdit *lineEdit = new QLineEdit(this);
 
-  layout = new QVBoxLayout(); // добавление виджета, кнопки и
-                              // текстового поля в лейаут
+  layout = new QVBoxLayout();  // добавление виджета, кнопки и
+                               // текстового поля в лейаут
   layout->addWidget(widget);
   layout->addWidget(button);
   layout->addWidget(lineEdit);
   this->centralWidget()->setLayout(
-      layout); // установка его в качестве центрального виджета
+      layout);  // установка его в качестве центрального виджета
 
-  cameraObj = view->camera(); // создаем объект камеры
+  cameraObj = view->camera();  // создаем объект камеры
   cameraObj->lens()->setPerspectiveProjection(
       45.0f, 16.0f / 9.0f, 0.1f,
-      10000.0f); // устанавливаем параметры проекции камеры
+      10000.0f);  // устанавливаем параметры проекции камеры
   cameraObj->setPosition(
-      QVector3D(0, 2, 0)); // позиция камеры в трехмерном пространстве
-  cameraObj->setUpVector(QVector3D(0, 0, 1)); // вектор верха камеры (x, y, z)
-  cameraObj->setViewCenter(QVector3D(1, 0, 0)); // центр обзора камеры
+      QVector3D(0, 2, 0));  // позиция камеры в трехмерном пространстве
+  cameraObj->setUpVector(QVector3D(0, 0, 1));  // вектор верха камеры (x, y, z)
+  cameraObj->setViewCenter(QVector3D(1, 0, 0));  // центр обзора камеры
   line_material = new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
   line_material->setAmbient(QColor(Qt::black));
   Qt3DExtras::QOrbitCameraController *cameraController =
       new Qt3DExtras::QOrbitCameraController(parentWin);
   cameraController->setCamera(cameraObj);
-  cameraController->setLookSpeed(100.0f);  // Скорость вращения
-  cameraController->setLinearSpeed(50.0f); // Линейная скорость
+  cameraController->setLookSpeed(100.0f);   // Скорость вращения
+  cameraController->setLinearSpeed(50.0f);  // Линейная скорость
 
   object = new Qt3DCore::QEntity(parentWin);
   // открытие файла и его загрузка
@@ -68,8 +71,8 @@ void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
     mesh = new Qt3DRender::QMesh(parentWin);
     mesh->setSource(QUrl::fromLocalFile(filename));
     mesh->setPrimitiveType(
-        Qt3DRender::QGeometryRenderer::Lines); // Установка режима отображения
-                                               // каркаса
+        Qt3DRender::QGeometryRenderer::Lines);  // Установка режима отображения
+                                                // каркаса
     Qt3DExtras::QPerVertexColorMaterial *material =
         new Qt3DExtras::QPerVertexColorMaterial(parentWin);
 
@@ -78,20 +81,10 @@ void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
     transform = new Qt3DCore::QTransform();
     object->addComponent(transform);
     const char *charstring = qPrintable(filename);
-    s21_object objInfo = start_parsing(charstring);
-    QPushButton *loadSettings = new QPushButton("Load settings", this);
-    QPushButton *saveSettings = new QPushButton("Save settings", this);
-    layout->addWidget(loadSettings);
-    layout->addWidget(saveSettings);
+    objInfo = start_parsing(charstring);
     settings(view, objInfo);
-    connect(saveSettings, &QPushButton::clicked, this, [=]() {
-      settingsWin->save_settings(&re_settings, cameraObj, mesh, object,
-                                 line_material);
-    });
-    connect(loadSettings, &QPushButton::clicked, this, [=]() {
-      settingsWin->load_settings(&re_settings, cameraObj, mesh, view, object,
-                                 line_material, parentWin, objInfo);
-    });
+    settingsWin->load_settings(&re_settings, cameraObj, mesh, view, object,
+                               line_material, parentWin, objInfo);
   });
 }
 
@@ -159,4 +152,8 @@ s21_object MainWindow::start_parsing(const char *filename) {
   return object;
 }
 
-MainWindow::~MainWindow() { delete ui; }
+MainWindow::~MainWindow() {
+  settingsWin->save_settings(&re_settings, cameraObj, mesh, object,
+                             line_material, view);
+  delete ui;
+}

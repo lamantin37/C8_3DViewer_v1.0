@@ -8,7 +8,7 @@
 typedef struct vertex {
   double x;
   double y;
-  double z; // координаты вершины
+  double z;  // координаты вершины
   int vertex_number;
 } s21_vertex;
 
@@ -22,4 +22,4 @@ typedef struct object {
   int num_of_vertices;
 } s21_object;
 
-#endif // AUXILIARY_MODULES_H
+#endif  // AUXILIARY_MODULES_H

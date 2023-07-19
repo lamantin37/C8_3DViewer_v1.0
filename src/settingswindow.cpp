@@ -53,7 +53,8 @@ SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QTransform *transform,
 void SettingsWindow::save_settings(
     QSettings *setts, Qt3DRender::QCamera *cameraObj, Qt3DRender::QMesh *mesh,
     Qt3DCore::QEntity *object,
-    Qt3DExtras::QDiffuseSpecularMaterial *line_material) {
+    Qt3DExtras::QDiffuseSpecularMaterial *line_material,
+    Qt3DExtras::Qt3DWindow *view) {
   qDebug() << "Save!";
   Qt3DRender::QCameraLens *lens = cameraObj->lens();
   Qt3DRender::QCameraLens::ProjectionType projectionType =
@@ -81,6 +82,9 @@ void SettingsWindow::save_settings(
   if (point_material->ambient() != QColor(Qt::black))
     point_clr = point_material->ambient();
   setts->setValue("point material", point_clr.name());
+  QColor backgroundColor = view->defaultFrameGraph()->clearColor();
+  setts->setValue("background color", backgroundColor.name());
+  qDebug() << setts->value("background color").toString();
   setts->sync();
 }
 
@@ -127,6 +131,9 @@ void SettingsWindow::load_settings(
   }
   QColor pointMaterial(setts->value("point material").toString());
   colorize_point(parentWin, pointMaterial);
+  QColor backgroundColor(setts->value("background color").toString());
+  qDebug() << setts->value("background color").toString();
+  view->defaultFrameGraph()->setClearColor(backgroundColor);
   setts->sync();
 }
 
@@ -135,8 +142,8 @@ void SettingsWindow::add_move_sliders(Qt3DCore::QTransform *transform) {
   moveYlabel->setMaximumSize(150, 15);
   moveZlabel->setMaximumSize(150, 15);
 
-  moveX->setRange(-100, 100); // задаем диапазон слайдера
-  moveX->setTickInterval(1); // интервал изменения значения слайдера
+  moveX->setRange(-100, 100);  // задаем диапазон слайдера
+  moveX->setTickInterval(1);  // интервал изменения значения слайдера
   moveY->setRange(-100, 100);
   moveY->setTickInterval(1);
   moveZ->setRange(-100, 100);
