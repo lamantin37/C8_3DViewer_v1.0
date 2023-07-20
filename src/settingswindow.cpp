@@ -281,12 +281,18 @@ void SettingsWindow::add_rotate_sliders(Qt3DCore::QTransform *transform) {
 void SettingsWindow::add_scale_slider(Qt3DRender::QCamera *cameraObj) {
   scaleObjectLabel->setMaximumSize(150, 20);
   layout->addWidget(scaleObjectLabel);
-  scaleObject->setRange(1, 100);
-  scaleObject->setValue(10);
+  scaleObject->setRange(1, 10000);
+  scaleObject->setValue(1);
   layout->addWidget(scaleObject);
-
-  connect(scaleObject, &QSlider::valueChanged, this, [=]() {
-
+  connect(scaleObject, &QSlider::valueChanged, this, [cameraObj](int value) {
+    float scaleFactor =
+        value /
+        10.0f;  // или другая функция отображения, которую вы предпочитаете
+    QVector3D cameraPosition = cameraObj->position();
+    QVector3D viewCenter = cameraObj->viewCenter();
+    QVector3D direction = cameraPosition - viewCenter;
+    direction.normalize();
+    cameraObj->setPosition(viewCenter + direction * scaleFactor);
   });
 }
 
