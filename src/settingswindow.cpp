@@ -53,7 +53,6 @@ void SettingsWindow::save_settings(
     QSettings *setts, Qt3DRender::QCamera *cameraObj, Qt3DRender::QMesh *mesh,
     Qt3DExtras::QDiffuseSpecularMaterial *line_material,
     Qt3DExtras::Qt3DWindow *view) {
-  qDebug() << "Save!";
   Qt3DRender::QCameraLens *lens = cameraObj->lens();
   Qt3DRender::QCameraLens::ProjectionType projectionType =
       lens->projectionType();
@@ -82,7 +81,6 @@ void SettingsWindow::save_settings(
   setts->setValue("point material", point_clr.name());
   QColor backgroundColor = view->defaultFrameGraph()->clearColor();
   setts->setValue("background color", backgroundColor.name());
-  qDebug() << setts->value("background color").toString();
   setts->sync();
 }
 
@@ -91,7 +89,6 @@ void SettingsWindow::load_settings(
     Qt3DExtras::Qt3DWindow *view, Qt3DCore::QEntity *object,
     Qt3DExtras::QDiffuseSpecularMaterial *line_material,
     Qt3DCore::QEntity *parentWin, s21_object objInf) {
-  qDebug() << "Load!";
   QString projection = setts->value("projection").toString();
   if (projection == "parallel") {
     float aspectRatio = float(view->width()) / view->height();
@@ -112,7 +109,6 @@ void SettingsWindow::load_settings(
   line_material->setAmbient(lineMaterial);
   object->addComponent(line_material);
   int loaded_point_type = setts->value("point type").toInt();
-  qDebug() << loaded_point_type;
   float radius = 0.03;
   if (loaded_point_type == NONE) {
     qDeleteAll(pointEntities);
@@ -129,7 +125,6 @@ void SettingsWindow::load_settings(
   QColor pointMaterial(setts->value("point material").toString());
   colorize_point(parentWin, pointMaterial);
   QColor backgroundColor(setts->value("background color").toString());
-  qDebug() << setts->value("background color").toString();
   view->defaultFrameGraph()->setClearColor(backgroundColor);
   setts->sync();
 }
@@ -319,7 +314,6 @@ void SettingsWindow::point_settings(Qt3DCore::QEntity *parentWin,
 void SettingsWindow::onRadiusReturnPressed(Qt3DCore::QEntity *parentWin,
                                            s21_object objInf) {
   radius = lineEditRadius->text().toFloat();
-  qDebug() << "Radius" << radius;
   if (point_type == CIRCLE) {
     qDeleteAll(pointEntities);
     pointEntities.clear();

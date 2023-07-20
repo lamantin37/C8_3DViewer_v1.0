@@ -58,5 +58,7 @@ class MainWindow : public QMainWindow {
   QLabel *fileLabel = nullptr;
   QLabel *verticesLabel = nullptr;
   QLabel *polygonsLabel = nullptr;
+  QString prevModel;
+  bool settings_flag = false;
 };
 #endif  // MAINWINDOW_H

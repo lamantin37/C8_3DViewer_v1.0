@@ -64,25 +64,26 @@ void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
     QString filename = QFileDialog::getOpenFileName(this, "Open a file", "",
                                                     "Obj Files (*.obj)");
     lineEdit->setText(filename);
-    if (mesh != nullptr) {
-      object->removeComponent(mesh);
-      delete mesh;
+    if (prevModel != filename) {
+      if (mesh != nullptr) {
+        object->removeComponent(mesh);
+        delete mesh;
+      }
+      prevModel = filename;
+      mesh = new Qt3DRender::QMesh(parentWin);
+      mesh->setSource(QUrl::fromLocalFile(filename));
+      mesh->setPrimitiveType(
+          Qt3DRender::QGeometryRenderer::Lines);  // Установка режима
+                                                  // отображения каркаса
+      settingsWin->load_settings(&re_settings, cameraObj, mesh, view, object,
+                                 line_material, parentWin, objInfo);
+      object->addComponent(mesh);
+      transform = new Qt3DCore::QTransform();
+      object->addComponent(transform);
+      const char *charstring = qPrintable(filename);
+      objInfo = start_parsing(charstring);
+      settings(view, objInfo);
     }
-    mesh = new Qt3DRender::QMesh(parentWin);
-    mesh->setSource(QUrl::fromLocalFile(filename));
-    mesh->setPrimitiveType(
-        Qt3DRender::QGeometryRenderer::Lines);  // Установка режима отображения
-                                                // каркаса
-
-    settingsWin->load_settings(&re_settings, cameraObj, mesh, view, object,
-                               line_material, parentWin, objInfo);
-    object->addComponent(mesh);
-    transform = new Qt3DCore::QTransform();
-    object->addComponent(transform);
-    const char *charstring = qPrintable(filename);
-    objInfo = start_parsing(charstring);
-
-    settings(view, objInfo);
   });
 }
 
@@ -110,15 +111,20 @@ void MainWindow::object_info(s21_object object, const char *filename) {
 void MainWindow::settings(Qt3DExtras::Qt3DWindow *view, s21_object objInfo) {
   layout->addWidget(settingsButton);
   connect(settingsButton, &QPushButton::clicked, this, [=]() {
-    settingsWin->show();
-    settingsWin->add_move_sliders(transform);
-    settingsWin->add_rotate_sliders(transform);
-    settingsWin->add_scale_slider(cameraObj);
-    settingsWin->projection_settings(cameraObj, view);
-    settingsWin->line_color_settings(object, line_material);
-    settingsWin->line_type_settings(mesh);
-    settingsWin->background_settings(view);
-    settingsWin->point_settings(parentWin, objInfo);
+    if (!settings_flag) {
+      settingsWin->show();
+      settingsWin->add_move_sliders(transform);
+      settingsWin->add_rotate_sliders(transform);
+      settingsWin->add_scale_slider(cameraObj);
+      settingsWin->projection_settings(cameraObj, view);
+      settingsWin->line_color_settings(object, line_material);
+      settingsWin->line_type_settings(mesh);
+      settingsWin->background_settings(view);
+      settingsWin->point_settings(parentWin, objInfo);
+      settings_flag = true;
+    } else {
+      settingsWin->show();
+    }
   });
 }
 
