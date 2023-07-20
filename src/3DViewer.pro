@@ -10,7 +10,8 @@ SOURCES += \
     parser.c \
     main.cpp \
     mainwindow.cpp \
-    settingswindow.cpp
+    settingswindow.cpp \
+    transformations.c
 
 HEADERS += \
     auxiliary_modules.h \
