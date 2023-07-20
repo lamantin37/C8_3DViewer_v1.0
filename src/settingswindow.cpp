@@ -1,7 +1,6 @@
 #include "settingswindow.h"
 
-SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QTransform *transform,
-                               Qt3DCore::QEntity *parentWin)
+SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QEntity *parentWin)
     : QWidget(parent) {
   setWindowFlags(Qt::Window);
   setFixedSize(QSize(400, 600));
@@ -52,7 +51,6 @@ SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QTransform *transform,
 
 void SettingsWindow::save_settings(
     QSettings *setts, Qt3DRender::QCamera *cameraObj, Qt3DRender::QMesh *mesh,
-    Qt3DCore::QEntity *object,
     Qt3DExtras::QDiffuseSpecularMaterial *line_material,
     Qt3DExtras::Qt3DWindow *view) {
   qDebug() << "Save!";
@@ -116,19 +114,19 @@ void SettingsWindow::load_settings(
   int loaded_point_type = setts->value("point type").toInt();
   qDebug() << loaded_point_type;
   float radius = 0.03;
-  //  if (loaded_point_type == NONE) {
-  //    qDeleteAll(pointEntities);
-  //    pointEntities.clear();
-  //  } else if (loaded_point_type == CIRCLE) {
-  //    qDeleteAll(pointEntities);
-  //    pointEntities.clear();
-  //    circle_point(parentWin, objInf, radius);
+  if (loaded_point_type == NONE) {
+    qDeleteAll(pointEntities);
+    pointEntities.clear();
+  } else if (loaded_point_type == CIRCLE) {
+    qDeleteAll(pointEntities);
+    pointEntities.clear();
+    circle_point(parentWin, objInf, radius);
 
-  //  } else if (loaded_point_type == SQUARE) {
-  //    qDeleteAll(pointEntities);
-  //    pointEntities.clear();
-  //    square_point(parentWin, objInf, radius);
-  //  }
+  } else if (loaded_point_type == SQUARE) {
+    qDeleteAll(pointEntities);
+    pointEntities.clear();
+    square_point(parentWin, objInf, radius);
+  }
   QColor pointMaterial(setts->value("point material").toString());
   colorize_point(parentWin, pointMaterial);
   QColor backgroundColor(setts->value("background color").toString());
@@ -280,15 +278,15 @@ void SettingsWindow::add_rotate_sliders(Qt3DCore::QTransform *transform) {
   });
 }
 
-void SettingsWindow::add_scale_slider(Qt3DCore::QTransform *transform) {
+void SettingsWindow::add_scale_slider(Qt3DRender::QCamera *cameraObj) {
   scaleObjectLabel->setMaximumSize(150, 20);
   layout->addWidget(scaleObjectLabel);
   scaleObject->setRange(1, 100);
   scaleObject->setValue(10);
   layout->addWidget(scaleObject);
+
   connect(scaleObject, &QSlider::valueChanged, this, [=]() {
-    float scale = scaleObject->value();
-    transform->setScale(scale);
+
   });
 }
 
@@ -319,20 +317,14 @@ void SettingsWindow::projection_settings(Qt3DRender::QCamera *cameraObj,
 }
 
 void SettingsWindow::line_type_settings(Qt3DRender::QMesh *mesh) {
-  QLabel *typeLabel = nullptr;
-  //  new QLabel("Select line type:", this);
-  QRadioButton *lineTypeRadioButton = nullptr;
-  //          new QRadioButton("Solid line", this);
-  QRadioButton *dotTypeRadioButton = nullptr;
-  //          new QRadioButton("Dotted line", this);
-  QHBoxLayout *hLayout = nullptr;
-  //          new QHBoxLayout();
-  layout->removeWidget(lineTypeRadioButton);
-
-  hLayout->addWidget(lineTypeRadioButton);
-  hLayout->addWidget(dotTypeRadioButton);
+  typeLabel = new QLabel("Select line type:", this);
+  lineTypeRadioButton = new QRadioButton("Solid line", this);
+  dotTypeRadioButton = new QRadioButton("Dotted line", this);
+  LineTypeLayout = new QHBoxLayout();
+  LineTypeLayout->addWidget(lineTypeRadioButton);
+  LineTypeLayout->addWidget(dotTypeRadioButton);
   layout->addWidget(typeLabel);
-  layout->addLayout(hLayout);
+  layout->addLayout(LineTypeLayout);
   connect(lineTypeRadioButton, &QRadioButton::clicked, this, [=]() {
     mesh->setPrimitiveType(Qt3DRender::QGeometryRenderer::Lines);
   });
@@ -342,7 +334,7 @@ void SettingsWindow::line_type_settings(Qt3DRender::QMesh *mesh) {
 }
 
 void SettingsWindow::line_color_settings(
-    Qt3DCore::QEntity *parentWin, Qt3DCore::QEntity *object,
+    Qt3DCore::QEntity *object,
     Qt3DExtras::QDiffuseSpecularMaterial *line_material) {
   layout->addWidget(lineColor);
   connect(lineColor, &QPushButton::clicked, this, [=]() {
@@ -423,8 +415,8 @@ void SettingsWindow::colorize_point(Qt3DCore::QEntity *parentWin,
                                     QColor color) {
   if (color.isValid()) {
     for (auto &entity : pointEntities) {
-      //      Qt3DExtras::QDiffuseSpecularMaterial *point_material =
-      //          new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
+      Qt3DExtras::QDiffuseSpecularMaterial *point_material =
+          new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
       point_material->setAmbient(color);
       entity->addComponent(point_material);
     }

@@ -24,14 +24,13 @@ class SettingsWindow : public QWidget {
   Q_OBJECT
  public:
   explicit SettingsWindow(QWidget *parent = nullptr,
-                          Qt3DCore::QTransform *transform = nullptr,
                           Qt3DCore::QEntity *parentWin = nullptr);
   void add_move_sliders(Qt3DCore::QTransform *);
   void add_rotate_sliders(Qt3DCore::QTransform *);
-  void add_scale_slider(Qt3DCore::QTransform *);
+  void add_scale_slider(Qt3DRender::QCamera *cameraObj);
   void projection_settings(Qt3DRender::QCamera *, Qt3DExtras::Qt3DWindow *view);
   void line_type_settings(Qt3DRender::QMesh *);
-  void line_color_settings(Qt3DCore::QEntity *, Qt3DCore::QEntity *,
+  void line_color_settings(Qt3DCore::QEntity *,
                            Qt3DExtras::QDiffuseSpecularMaterial *);
   void background_settings(Qt3DExtras::Qt3DWindow *);
   void circle_point(Qt3DCore::QEntity *, s21_object, float);
@@ -40,7 +39,6 @@ class SettingsWindow : public QWidget {
   void point_settings(Qt3DCore::QEntity *, s21_object);
   void removePoints(Qt3DCore::QEntity *parentWin);
   void save_settings(QSettings *, Qt3DRender::QCamera *, Qt3DRender::QMesh *,
-                     Qt3DCore::QEntity *,
                      Qt3DExtras::QDiffuseSpecularMaterial *,
                      Qt3DExtras::Qt3DWindow *);
   void load_settings(QSettings *, Qt3DRender::QCamera *, Qt3DRender::QMesh *,
@@ -90,6 +88,10 @@ class SettingsWindow : public QWidget {
   int point_type;
   QLineEdit *lineEditRadius = nullptr;
   float radius;
+  QLabel *typeLabel = nullptr;
+  QRadioButton *lineTypeRadioButton = nullptr;
+  QRadioButton *dotTypeRadioButton = nullptr;
+  QHBoxLayout *LineTypeLayout;
   Qt3DExtras::QDiffuseSpecularMaterial *point_material;
 };
 

@@ -45,10 +45,6 @@ void object_parser(FILE *fp, s21_object *object, s21_vertex *vertex,
           vertex[vertex_index].y = y;
           vertex[vertex_index].z = z;
           vertex[vertex_index].vertex_number = vertex_count + 1;
-          //           printf("%d: %lf %lf %lf\n",
-          //           vertex[vertex_index].vertex_number,
-          //           vertex[vertex_index].x, vertex[vertex_index].y,
-          //           vertex[vertex_index].z);
           vertex_index++;
         }
         vertex_count++;

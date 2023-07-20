@@ -58,9 +58,5 @@ class MainWindow : public QMainWindow {
   QLabel *fileLabel = nullptr;
   QLabel *verticesLabel = nullptr;
   QLabel *polygonsLabel = nullptr;
-  //  QList<QPixmap> frames;
-  //  QTimer* gifTimer;
-  //  QTimer *countdownTimer;
-  //  QGifImage gif;
 };
 #endif  // MAINWINDOW_H

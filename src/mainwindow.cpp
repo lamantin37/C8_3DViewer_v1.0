@@ -55,7 +55,7 @@ MainWindow::MainWindow(QWidget *parent)
   layout->addWidget(saveModelButton);
   connect(saveModelButton, &QPushButton::clicked, this,
           [=]() { image_render(); });
-  settingsWin = new SettingsWindow(this, transform, parentWin);
+  settingsWin = new SettingsWindow(this, parentWin);
 }
 
 void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
@@ -113,9 +113,9 @@ void MainWindow::settings(Qt3DExtras::Qt3DWindow *view, s21_object objInfo) {
     settingsWin->show();
     settingsWin->add_move_sliders(transform);
     settingsWin->add_rotate_sliders(transform);
-    settingsWin->add_scale_slider(transform);
+    settingsWin->add_scale_slider(cameraObj);
     settingsWin->projection_settings(cameraObj, view);
-    settingsWin->line_color_settings(parentWin, object, line_material);
+    settingsWin->line_color_settings(object, line_material);
     settingsWin->line_type_settings(mesh);
     settingsWin->background_settings(view);
     settingsWin->point_settings(parentWin, objInfo);
@@ -157,7 +157,7 @@ s21_object MainWindow::start_parsing(const char *filename) {
 }
 
 MainWindow::~MainWindow() {
-  settingsWin->save_settings(&re_settings, cameraObj, mesh, object,
-                             line_material, view);
+  settingsWin->save_settings(&re_settings, cameraObj, mesh, line_material,
+                             view);
   delete ui;
 }
