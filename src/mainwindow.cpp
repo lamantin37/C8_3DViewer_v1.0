@@ -38,8 +38,8 @@ MainWindow::MainWindow(QWidget *parent)
       10000.0f);  // устанавливаем параметры проекции камеры
   cameraObj->setPosition(
       QVector3D(0, 2, 0));  // позиция камеры в трехмерном пространстве
-  cameraObj->setUpVector(QVector3D(0, 0, 1));  // вектор верха камеры (x, y, z)
-  cameraObj->setViewCenter(QVector3D(1, 0, 0));  // центр обзора камеры
+  cameraObj->setUpVector(QVector3D(1, 0, 0));  // вектор верха камеры (x, y, z)
+  cameraObj->setViewCenter(QVector3D(1, 1, 0));  // центр обзора камеры
   line_material = new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
   line_material->setAmbient(QColor(Qt::black));
   Qt3DExtras::QOrbitCameraController *cameraController =
@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
   QPushButton *saveModelButton = new QPushButton("Save model render", this);
   layout->addWidget(saveModelButton);
   connect(saveModelButton, &QPushButton::clicked, this,
-          [=]() { image_render(view); });
+          [=]() { image_render(); });
   settingsWin = new SettingsWindow(this, transform, parentWin);
 }
 
@@ -73,28 +73,32 @@ void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
     mesh->setPrimitiveType(
         Qt3DRender::QGeometryRenderer::Lines);  // Установка режима отображения
                                                 // каркаса
-    Qt3DExtras::QPerVertexColorMaterial *material =
-        new Qt3DExtras::QPerVertexColorMaterial(parentWin);
 
-    object->addComponent(material);
+    settingsWin->load_settings(&re_settings, cameraObj, mesh, view, object,
+                               line_material, parentWin, objInfo);
     object->addComponent(mesh);
     transform = new Qt3DCore::QTransform();
     object->addComponent(transform);
     const char *charstring = qPrintable(filename);
     objInfo = start_parsing(charstring);
+
     settings(view, objInfo);
-    settingsWin->load_settings(&re_settings, cameraObj, mesh, view, object,
-                               line_material, parentWin, objInfo);
   });
 }
 
 void MainWindow::object_info(s21_object object, const char *filename) {
   QString str(filename);
-  QLabel *fileLabel = new QLabel("File: " + str);
-  QLabel *verticesLabel = new QLabel("Number of vertices: " +
-                                     QString::number(object.num_of_vertices));
-  QLabel *polygonsLabel = new QLabel("Number of polygons: " +
-                                     QString::number(object.num_of_polygons));
+  layout->removeWidget(fileLabel);
+  layout->removeWidget(verticesLabel);
+  layout->removeWidget(polygonsLabel);
+  delete fileLabel;
+  delete verticesLabel;
+  delete polygonsLabel;
+  fileLabel = new QLabel("File: " + str, this);
+  verticesLabel = new QLabel(
+      "Number of vertices: " + QString::number(object.num_of_vertices), this);
+  polygonsLabel = new QLabel(
+      "Number of polygons: " + QString::number(object.num_of_polygons), this);
   fileLabel->setFixedSize(QSize(1000, 20));
   verticesLabel->setFixedSize(QSize(250, 20));
   polygonsLabel->setFixedSize(QSize(250, 20));
@@ -118,7 +122,7 @@ void MainWindow::settings(Qt3DExtras::Qt3DWindow *view, s21_object objInfo) {
   });
 }
 
-void MainWindow::image_render(Qt3DExtras::Qt3DWindow *view) {
+void MainWindow::image_render() {
   QString filename;
   QScreen *screen = view->screen();
   QPixmap screenshot = screen->grabWindow(view->winId());

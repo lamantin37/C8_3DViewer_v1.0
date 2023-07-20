@@ -34,7 +34,7 @@ class MainWindow : public QMainWindow {
   void settings(Qt3DExtras::Qt3DWindow *, s21_object);  //
 
   s21_object start_parsing(const char *);
-  void image_render(Qt3DExtras::Qt3DWindow *view);
+  void image_render();
 
  private:
   Ui::MainWindow *ui;
@@ -55,5 +55,12 @@ class MainWindow : public QMainWindow {
   QSettings re_settings;
   Qt3DExtras::QDiffuseSpecularMaterial *line_material;
   s21_object objInfo;
+  QLabel *fileLabel = nullptr;
+  QLabel *verticesLabel = nullptr;
+  QLabel *polygonsLabel = nullptr;
+  //  QList<QPixmap> frames;
+  //  QTimer* gifTimer;
+  //  QTimer *countdownTimer;
+  //  QGifImage gif;
 };
 #endif  // MAINWINDOW_H

@@ -77,7 +77,7 @@ void SettingsWindow::save_settings(
   if (line_material->ambient() != QColor(Qt::black))
     line_clr = line_material->ambient();
   setts->setValue("line material", line_clr.name());
-  setts->setValue("point type", point_type);
+  //  setts->setValue("point type", point_type);
   QColor point_clr = QColor(Qt::black);
   if (point_material->ambient() != QColor(Qt::black))
     point_clr = point_material->ambient();
@@ -116,19 +116,19 @@ void SettingsWindow::load_settings(
   int loaded_point_type = setts->value("point type").toInt();
   qDebug() << loaded_point_type;
   float radius = 0.03;
-  if (loaded_point_type == NONE) {
-    qDeleteAll(pointEntities);
-    pointEntities.clear();
-  } else if (loaded_point_type == CIRCLE) {
-    qDeleteAll(pointEntities);
-    pointEntities.clear();
-    circle_point(parentWin, objInf, radius);
+  //  if (loaded_point_type == NONE) {
+  //    qDeleteAll(pointEntities);
+  //    pointEntities.clear();
+  //  } else if (loaded_point_type == CIRCLE) {
+  //    qDeleteAll(pointEntities);
+  //    pointEntities.clear();
+  //    circle_point(parentWin, objInf, radius);
 
-  } else if (loaded_point_type == SQUARE) {
-    qDeleteAll(pointEntities);
-    pointEntities.clear();
-    square_point(parentWin, objInf, radius);
-  }
+  //  } else if (loaded_point_type == SQUARE) {
+  //    qDeleteAll(pointEntities);
+  //    pointEntities.clear();
+  //    square_point(parentWin, objInf, radius);
+  //  }
   QColor pointMaterial(setts->value("point material").toString());
   colorize_point(parentWin, pointMaterial);
   QColor backgroundColor(setts->value("background color").toString());
@@ -319,10 +319,16 @@ void SettingsWindow::projection_settings(Qt3DRender::QCamera *cameraObj,
 }
 
 void SettingsWindow::line_type_settings(Qt3DRender::QMesh *mesh) {
-  QLabel *typeLabel = new QLabel("Select line type:", this);
-  QRadioButton *lineTypeRadioButton = new QRadioButton("Solid line", this);
-  QRadioButton *dotTypeRadioButton = new QRadioButton("Dotted line", this);
-  QHBoxLayout *hLayout = new QHBoxLayout();
+  QLabel *typeLabel = nullptr;
+  //  new QLabel("Select line type:", this);
+  QRadioButton *lineTypeRadioButton = nullptr;
+  //          new QRadioButton("Solid line", this);
+  QRadioButton *dotTypeRadioButton = nullptr;
+  //          new QRadioButton("Dotted line", this);
+  QHBoxLayout *hLayout = nullptr;
+  //          new QHBoxLayout();
+  layout->removeWidget(lineTypeRadioButton);
+
   hLayout->addWidget(lineTypeRadioButton);
   hLayout->addWidget(dotTypeRadioButton);
   layout->addWidget(typeLabel);
