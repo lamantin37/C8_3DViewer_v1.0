@@ -100,6 +100,8 @@ class SettingsWindow : public QWidget {
   QLineEdit *lineEditRY = nullptr;
   QLineEdit *lineEditRZ = nullptr;
 
+  QLineEdit *scaleEdit = nullptr;
+
   QSlider *scaleObject = nullptr;
   QLabel *scaleObjectLabel = nullptr;
 

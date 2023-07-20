@@ -33,6 +33,8 @@ SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QEntity *parentWin)
 
   scaleObject = new QSlider(Qt::Horizontal, this);
   scaleObjectLabel = new QLabel("Scale object");
+  scaleEdit = new QLineEdit(this);
+  scaleEdit->setValidator(new QDoubleValidator(this));
 
   backgroundColor = new QPushButton("Change background color", this);
   pointColor = new QPushButton("Change point color", this);
@@ -192,17 +194,28 @@ void SettingsWindow::add_rotate_sliders(Qt3DCore::QTransform *transform) {
 void SettingsWindow::add_scale_slider(Qt3DRender::QCamera *cameraObj) {
   scaleObjectLabel->setMaximumSize(150, 20);
   layout->addWidget(scaleObjectLabel);
-  scaleObject->setRange(1, 10000);
-  scaleObject->setValue(1);
-  layout->addWidget(scaleObject);
-  connect(scaleObject, &QSlider::valueChanged, this, [cameraObj](int value) {
-    float scaleFactor =
-        value /
-        10.0f;  // или другая функция отображения, которую вы предпочитаете
+  scaleObject->setRange(-1000, 1000);
+  scaleObject->setValue(0);
+  QHBoxLayout *xLayout = new QHBoxLayout();
+  xLayout->addWidget(scaleObject);
+  xLayout->addWidget(scaleEdit);
+  layout->addLayout(xLayout);
+  connect(scaleObject, &QSlider::valueChanged, this,
+          [this, cameraObj](int value) {
+            QVector3D cameraPosition = cameraObj->position();
+            QVector3D viewCenter = cameraObj->viewCenter();
+            QVector3D direction = cameraPosition - viewCenter;
+            direction.normalize();
+            float scaleFactor = std::pow(1.01f, value);
+            cameraObj->setPosition(viewCenter + direction * scaleFactor);
+            scaleEdit->setText(QString::number(value));
+          });
+  connect(scaleEdit, &QLineEdit::returnPressed, this, [this, cameraObj]() {
     QVector3D cameraPosition = cameraObj->position();
     QVector3D viewCenter = cameraObj->viewCenter();
     QVector3D direction = cameraPosition - viewCenter;
     direction.normalize();
+    float scaleFactor = std::pow(1.01f, scaleEdit->text().toFloat());
     cameraObj->setPosition(viewCenter + direction * scaleFactor);
   });
 }
