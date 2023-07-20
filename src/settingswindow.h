@@ -20,6 +20,36 @@
 #define CIRCLE 1
 #define SQUARE 2
 
+#define ROTATE_MACRO(SLIDER, LINE_EDIT, ROTATION)             \
+  connect(SLIDER, &QSlider::valueChanged, this, [=]() {       \
+    float angle = SLIDER->value();                            \
+    transform->ROTATION(angle);                               \
+    LINE_EDIT->setText(QString::number(angle));               \
+  });                                                         \
+                                                              \
+  connect(LINE_EDIT, &QLineEdit::returnPressed, this, [=]() { \
+    float angle = LINE_EDIT->text().toFloat();                \
+    transform->ROTATION(angle);                               \
+    SLIDER->setValue(angle);                                  \
+  });
+
+#define MOVE_MACRO(SLIDER, LINE_EDIT)                         \
+  connect(SLIDER, &QSlider::valueChanged, this, [=]() {       \
+    float x = moveX->value();                                 \
+    float y = moveY->value();                                 \
+    float z = moveZ->value();                                 \
+    transform->setTranslation(QVector3D(x, y, z));            \
+    LINE_EDIT->setText(QString::number(SLIDER->value()));     \
+  });                                                         \
+                                                              \
+  connect(LINE_EDIT, &QLineEdit::returnPressed, this, [=]() { \
+    float x = moveX->value();                                 \
+    float y = moveY->value();                                 \
+    float z = moveZ->value();                                 \
+    transform->setTranslation(QVector3D(x, y, z));            \
+    SLIDER->setValue(LINE_EDIT->text().toFloat());            \
+  });
+
 class SettingsWindow : public QWidget {
   Q_OBJECT
  public:

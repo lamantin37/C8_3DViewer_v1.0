@@ -121,7 +121,6 @@ void SettingsWindow::load_settings(
     qDeleteAll(pointEntities);
     pointEntities.clear();
     circle_point(parentWin, objInf, radius);
-
   } else if (loaded_point_type == SQUARE) {
     qDeleteAll(pointEntities);
     pointEntities.clear();
@@ -139,143 +138,60 @@ void SettingsWindow::add_move_sliders(Qt3DCore::QTransform *transform) {
   moveXlabel->setMaximumSize(150, 15);
   moveYlabel->setMaximumSize(150, 15);
   moveZlabel->setMaximumSize(150, 15);
-
   moveX->setRange(-100, 100);  // задаем диапазон слайдера
   moveX->setTickInterval(1);  // интервал изменения значения слайдера
   moveY->setRange(-100, 100);
   moveY->setTickInterval(1);
   moveZ->setRange(-100, 100);
   moveZ->setTickInterval(1);
-
   QHBoxLayout *xLayout = new QHBoxLayout();
   xLayout->addWidget(moveX);
   xLayout->addWidget(lineEditX);
-
   QHBoxLayout *yLayout = new QHBoxLayout();
   yLayout->addWidget(moveY);
   yLayout->addWidget(lineEditY);
-
   QHBoxLayout *zLayout = new QHBoxLayout();
   zLayout->addWidget(moveZ);
   zLayout->addWidget(lineEditZ);
-
   layout->addWidget(moveXlabel);
   layout->addLayout(xLayout);
   layout->addWidget(moveYlabel);
   layout->addLayout(yLayout);
   layout->addWidget(moveZlabel);
   layout->addLayout(zLayout);
-
-  connect(moveX, &QSlider::valueChanged, this, [=]() {
-    float x = moveX->value();
-    float y = moveY->value();
-    float z = moveZ->value();
-    transform->setTranslation(QVector3D(x, y, z));
-    lineEditX->setText(QString::number(x));
-  });
-  connect(moveY, &QSlider::valueChanged, this, [=]() {
-    float x = moveX->value();
-    float y = moveY->value();
-    float z = moveZ->value();
-    transform->setTranslation(QVector3D(x, y, z));
-    lineEditY->setText(QString::number(y));
-  });
-  connect(moveZ, &QSlider::valueChanged, this, [=]() {
-    float x = moveX->value();
-    float y = moveY->value();
-    float z = moveZ->value();
-    transform->setTranslation(QVector3D(x, y, z));
-    lineEditZ->setText(QString::number(z));
-  });
-  connect(lineEditX, &QLineEdit::returnPressed, this, [=]() {
-    float x = lineEditX->text().toFloat();
-    float y = moveY->value();
-    float z = moveZ->value();
-    transform->setTranslation(QVector3D(x, y, z));
-    moveX->setValue(x);
-  });
-  connect(lineEditY, &QLineEdit::returnPressed, this, [=]() {
-    float x = moveX->value();
-    float y = lineEditY->text().toFloat();
-    float z = moveZ->value();
-    transform->setTranslation(QVector3D(x, y, z));
-    moveY->setValue(y);
-  });
-  connect(lineEditZ, &QLineEdit::returnPressed, this, [=]() {
-    float x = moveX->value();
-    float y = moveY->value();
-    float z = lineEditZ->text().toFloat();
-    transform->setTranslation(QVector3D(x, y, z));
-    moveZ->setValue(z);
-  });
+  MOVE_MACRO(moveX, lineEditX)
+  MOVE_MACRO(moveY, lineEditY)
+  MOVE_MACRO(moveZ, lineEditZ)
 }
 
 void SettingsWindow::add_rotate_sliders(Qt3DCore::QTransform *transform) {
   rotateXlabel->setMaximumSize(150, 15);
   rotateYlabel->setMaximumSize(150, 15);
   rotateZlabel->setMaximumSize(150, 15);
-
   rotateX->setRange(0, 360);
   rotateX->setTickInterval(1);
   rotateY->setRange(0, 360);
   rotateY->setTickInterval(1);
   rotateZ->setRange(0, 360);
   rotateZ->setTickInterval(1);
-
   QHBoxLayout *xLayout = new QHBoxLayout();
   xLayout->addWidget(rotateX);
   xLayout->addWidget(lineEditRX);
-
   QHBoxLayout *yLayout = new QHBoxLayout();
   yLayout->addWidget(rotateY);
   yLayout->addWidget(lineEditRY);
-
   QHBoxLayout *zLayout = new QHBoxLayout();
   zLayout->addWidget(rotateZ);
   zLayout->addWidget(lineEditRZ);
-
   layout->addWidget(rotateXlabel);
   layout->addLayout(xLayout);
   layout->addWidget(rotateYlabel);
   layout->addLayout(yLayout);
   layout->addWidget(rotateZlabel);
   layout->addLayout(zLayout);
-
-  connect(rotateX, &QSlider::valueChanged, this, [=]() {
-    float angle = rotateX->value();
-    transform->setRotationX(angle);
-    lineEditRX->setText(QString::number(angle));
-  });
-
-  connect(rotateY, &QSlider::valueChanged, this, [=]() {
-    float angle = rotateY->value();
-    transform->setRotationY(angle);
-    lineEditRY->setText(QString::number(angle));
-  });
-
-  connect(rotateZ, &QSlider::valueChanged, this, [=]() {
-    float angle = rotateZ->value();
-    transform->setRotationZ(angle);
-    lineEditRZ->setText(QString::number(angle));
-  });
-
-  connect(lineEditRX, &QLineEdit::returnPressed, this, [=]() {
-    float angle = lineEditRX->text().toFloat();
-    transform->setRotationX(angle);
-    rotateX->setValue(angle);
-  });
-
-  connect(lineEditRY, &QLineEdit::returnPressed, this, [=]() {
-    float angle = lineEditRY->text().toFloat();
-    transform->setRotationY(angle);
-    rotateY->setValue(angle);
-  });
-
-  connect(lineEditRZ, &QLineEdit::returnPressed, this, [=]() {
-    float angle = lineEditRZ->text().toFloat();
-    transform->setRotationZ(angle);
-    rotateZ->setValue(angle);
-  });
+  ROTATE_MACRO(rotateX, lineEditRX, setRotationX)
+  ROTATE_MACRO(rotateY, lineEditRY, setRotationY)
+  ROTATE_MACRO(rotateZ, lineEditRZ, setRotationZ)
 }
 
 void SettingsWindow::add_scale_slider(Qt3DRender::QCamera *cameraObj) {
@@ -308,13 +224,11 @@ void SettingsWindow::projection_settings(Qt3DRender::QCamera *cameraObj,
   hLayout->addWidget(centralProjectionRadioButton);
   layout->addWidget(projLabel);
   layout->addLayout(hLayout);
-
   connect(parallelProjectionRadioButton, &QRadioButton::clicked, this, [=]() {
     float aspectRatio = float(view->width()) / view->height();
     cameraObj->lens()->setPerspectiveProjection(45.0f, aspectRatio, 0.1f,
                                                 10000.0f);
   });
-
   connect(centralProjectionRadioButton, &QRadioButton::clicked, this, [=]() {
     float aspectRatio = float(view->width()) / view->height();
     cameraObj->lens()->setOrthographicProjection(-aspectRatio, aspectRatio,

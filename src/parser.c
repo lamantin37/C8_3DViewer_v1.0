@@ -30,14 +30,9 @@ void object_parser(FILE *fp, s21_object *object, s21_vertex *vertex,
     printf("Memory error\n");
   } else {
     fseek(fp, 0, SEEK_SET);
-    int polygon_index = 0;
-    int polygon_count = 0;
-    int vertex_index = 0;
-    int vertex_count = 0;
-    double x, y, z;
-    int v1, v2, v3;
-    int ch;
-
+    int polygon_index = 0, vertex_index = 0, vertex_count = 0;
+    double x = 0, y = 0, z = 0;
+    int v1 = 0, v2 = 0, v3 = 0, ch = 0;
     while ((ch = fgetc(fp)) != EOF) {
       if (ch == 'v') {
         if (fscanf(fp, "%lf %lf %lf", &x, &y, &z) == 3) {
@@ -59,17 +54,4 @@ void object_parser(FILE *fp, s21_object *object, s21_vertex *vertex,
     }
   }
   fclose(fp);
-}
-
-void printPolygon(s21_object *object) {
-  for (int i = 0; i < 10 /*object->num_of_polygons*/; i++) {
-    for (int j = 0; j < POLYGON_SIZE; j++) {
-      printf("polygon %d, v %d: %lf %lf %lf\n", i,
-             object->polygons[i].vertices[j].vertex_number,
-             object->polygons[i].vertices[j].x,
-             object->polygons[i].vertices[j].y,
-             object->polygons[i].vertices[j].z);
-    }
-    printf("\n");
-  }
 }
