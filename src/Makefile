@@ -6,6 +6,9 @@ TESTS = $(wildcard test_3dviewer.c)
 OBJECTS = $(patsubst %.c,%.o, ${SOURCE})
 QMAKE_PATH = /home/jexwerquez/Qt5.12.12/5.12.12/gcc_64/bin/qmake
 BUILD_SRC = /build-3DViewer-Desktop_Qt_5_12_12_GCC_64bit-Debug/
+CFLAGS_TEST =`pkg-config --cflags --libs check`
+CFLAGS_GCOV =-fprofile-arcs -ftest-coverage
+DIR = report/tests
 
 _UNAME_ := $(shell uname -s)
 
@@ -25,18 +28,9 @@ endif
 
 PATH := $(PATH):$(BREW)/bin
 GCOV = --coverage
-PROJECT_NAME := s21_3DViewer
+PROJECT_NAME := 3DViewer
 
 all: clean style ${PROJECT_NAME}.a test gcov_report
-
-$(PROJECT_NAME).a: ${SOURCE} ${HEADERS}
-	$(info                                         )
-	$(info ----------------------------------------)
-	$(info Build a static library '3DViewer.a'  )
-	$(info ----------------------------------------)
-	$(CC) -c $(CFLAGS) $(SOURCE)
-	ar rc $@ ${OBJECTS}
-	ranlib $@	
 
 tests: $(TESTS) $(SOURCE)
 	$(info                                         )
@@ -67,21 +61,14 @@ uninstall:
 	make clean
 	-rm -rf ../${BUILD_SRC}
 
-gcov_report: clean lcov $(TESTS)
-	$(info                                         )
-	$(info ----------------------------------------)
-	$(info Create tests coverage report            )
-	$(info ----------------------------------------)
-	mkdir report
-	$(CC) -c $(CFLAGS) $(ADD_LIB) $(GCOV) $(SOURCE)
-	$(CC) -o $@ $(GCOV) $(OBJECTS) $(TESTS) $(ADD_LIB)
-	./$@
-	lcov -t $@ -o $@.info -c -d . --no-external
-	genhtml -o report/ $@.info
-	# rm -rf *.gcda
-	# rm -rf *.gcno
-	# rm -rf *.info
 
+gcov_report: clean
+	mkdir report
+	@$(CC) $(CFLAGS) $(CFLAGS_TEST) $(CFLAGS_GCOV) $(SOURCE) $(TESTS) -o $(DIR) $(ADD_LIB)
+	@$(DIR)
+	@gcov tests
+	@lcov --capture --directory report --output-file report/main_coverage.info
+	@genhtml report/main_coverage.info --output-directory report/lcov_report/index.html
 
 ifeq ($(_UNAME_), Darwin) # MacOS
 	open $(BROWSER_APP)./ report/src/index.html
@@ -126,3 +113,4 @@ clean:
 	-rm -rf qMakefile
 	-rm -rf ./build
 	-rm -rf Archive_3DViewer_v1.0.tgz
+.PHONY: all install uninstall clean dvi dist

@@ -1,14 +1,5 @@
 #include "auxiliary_modules.h"
 
-void print_matrix(matrix_t *matr) {
-  for (int i = 0; i < matr->rows; i++) {
-    for (int j = 0; j < matr->columns; j++) {
-      printf("%lf\t", matr->matrix[i][j]);
-    }
-    putchar('\n');
-  }
-}
-
 int s21_create_matrix(int rows, int columns, matrix_t *result) {
   int return_flag = CALC_ERROR;
   if (rows > 0 && columns > 0) {
@@ -79,9 +70,6 @@ void move(float x, float y, float z, matrix_t *cur_point, matrix_t *result) {
   move_matrix.matrix[0][3] = x;
   move_matrix.matrix[1][3] = y;
   move_matrix.matrix[2][3] = z;
-  print_matrix(cur_point);
-  putchar('\n');
-  print_matrix(&move_matrix);
   s21_mult_matrix(&move_matrix, cur_point, result);
 }
 
@@ -93,23 +81,20 @@ void rotate(float x, float y, float z, matrix_t *cur_point, matrix_t *result) {
   }
   if (x != 0) {
     rotate_matrix.matrix[1][1] = cos(x);
-    rotate_matrix.matrix[1][2] = sin(x);
-    rotate_matrix.matrix[2][1] = -sin(x);
+    rotate_matrix.matrix[1][2] = -sin(x);
+    rotate_matrix.matrix[2][1] = sin(x);
     rotate_matrix.matrix[2][2] = cos(x);
   } else if (y != 0) {
     rotate_matrix.matrix[0][0] = cos(y);
-    rotate_matrix.matrix[0][2] = -sin(y);
-    rotate_matrix.matrix[2][0] = sin(y);
+    rotate_matrix.matrix[0][2] = sin(y);
+    rotate_matrix.matrix[2][0] = -sin(y);
     rotate_matrix.matrix[2][2] = cos(y);
   } else if (z != 0) {
     rotate_matrix.matrix[0][0] = cos(z);
-    rotate_matrix.matrix[0][1] = sin(z);
-    rotate_matrix.matrix[1][0] = -sin(z);
+    rotate_matrix.matrix[0][1] = -sin(z);
+    rotate_matrix.matrix[1][0] = sin(z);
     rotate_matrix.matrix[1][1] = cos(z);
   }
-  print_matrix(cur_point);
-  putchar('\n');
-  print_matrix(&rotate_matrix);
   s21_mult_matrix(&rotate_matrix, cur_point, result);
 }
 
@@ -122,18 +107,3 @@ void scale(float x, float y, float z, matrix_t *cur_point, matrix_t *result) {
   scale_matrix.matrix[3][3] = 1;
   s21_mult_matrix(&scale_matrix, cur_point, result);
 }
-
-// int main() {
-//   matrix_t cur_point = {0};
-//   matrix_t result = {0};
-//   s21_create_matrix(4, 1, &cur_point);
-//   s21_create_matrix(4, 1, &result);
-//   cur_point.matrix[0][0] = 1;
-//   cur_point.matrix[1][0] = 2;
-//   cur_point.matrix[2][0] = 3;
-//   cur_point.matrix[3][0] = 4;
-//   move(3, 4, 5, &cur_point, &result);
-//   rotate(0, 7, 0, &cur_point, &result);
-//   print_matrix(&result);
-//   return 0;
-// }
