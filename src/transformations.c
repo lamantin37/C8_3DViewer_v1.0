@@ -71,6 +71,7 @@ void move(float x, float y, float z, matrix_t *cur_point, matrix_t *result) {
   move_matrix.matrix[1][3] = y;
   move_matrix.matrix[2][3] = z;
   s21_mult_matrix(&move_matrix, cur_point, result);
+  s21_remove_matrix(&move_matrix);
 }
 
 void rotate(float x, float y, float z, matrix_t *cur_point, matrix_t *result) {
@@ -96,6 +97,7 @@ void rotate(float x, float y, float z, matrix_t *cur_point, matrix_t *result) {
     rotate_matrix.matrix[1][1] = cos(z);
   }
   s21_mult_matrix(&rotate_matrix, cur_point, result);
+  s21_remove_matrix(&rotate_matrix);
 }
 
 void scale(float x, float y, float z, matrix_t *cur_point, matrix_t *result) {
@@ -106,4 +108,5 @@ void scale(float x, float y, float z, matrix_t *cur_point, matrix_t *result) {
   scale_matrix.matrix[2][2] = z;
   scale_matrix.matrix[3][3] = 1;
   s21_mult_matrix(&scale_matrix, cur_point, result);
+  s21_remove_matrix(&scale_matrix);
 }

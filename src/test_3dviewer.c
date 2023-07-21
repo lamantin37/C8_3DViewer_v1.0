@@ -96,7 +96,6 @@ START_TEST(test_move1) {
   matrix_t cur_point = {0};
   matrix_t result = {0};
   s21_create_matrix(4, 1, &cur_point);
-  s21_create_matrix(4, 1, &result);
   cur_point.matrix[0][0] = 1;
   cur_point.matrix[1][0] = 2;
   cur_point.matrix[2][0] = 3;
@@ -115,7 +114,6 @@ START_TEST(test_move2) {
   matrix_t cur_point = {0};
   matrix_t result = {0};
   s21_create_matrix(4, 1, &cur_point);
-  s21_create_matrix(4, 1, &result);
   cur_point.matrix[0][0] = -1.1;
   cur_point.matrix[1][0] = -2.2;
   cur_point.matrix[2][0] = -3.3;
@@ -134,7 +132,6 @@ START_TEST(test_rotate1) {
   matrix_t cur_point = {0};
   matrix_t result = {0};
   s21_create_matrix(4, 1, &cur_point);
-  s21_create_matrix(4, 1, &result);
   cur_point.matrix[0][0] = -1.1;
   cur_point.matrix[1][0] = -2.2;
   cur_point.matrix[2][0] = -3.3;
@@ -153,7 +150,6 @@ START_TEST(test_rotate2) {
   matrix_t cur_point = {0};
   matrix_t result = {0};
   s21_create_matrix(4, 1, &cur_point);
-  s21_create_matrix(4, 1, &result);
   cur_point.matrix[0][0] = 1111;
   cur_point.matrix[1][0] = 222;
   cur_point.matrix[2][0] = 33;
@@ -172,7 +168,6 @@ START_TEST(test_rotate3) {
   matrix_t cur_point = {0};
   matrix_t result = {0};
   s21_create_matrix(4, 1, &cur_point);
-  s21_create_matrix(4, 1, &result);
   cur_point.matrix[0][0] = 0;
   cur_point.matrix[1][0] = 777;
   cur_point.matrix[2][0] = 22;
@@ -191,7 +186,6 @@ START_TEST(test_scale1) {
   matrix_t cur_point = {0};
   matrix_t result = {0};
   s21_create_matrix(4, 1, &cur_point);
-  s21_create_matrix(4, 1, &result);
   cur_point.matrix[0][0] = 345;
   cur_point.matrix[1][0] = -532;
   cur_point.matrix[2][0] = 0.05;
@@ -210,7 +204,6 @@ START_TEST(test_scale2) {
   matrix_t cur_point = {0};
   matrix_t result = {0};
   s21_create_matrix(4, 1, &cur_point);
-  s21_create_matrix(4, 1, &result);
   cur_point.matrix[0][0] = 345;
   cur_point.matrix[1][0] = -532;
   cur_point.matrix[2][0] = 0.05;

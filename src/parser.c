@@ -22,7 +22,7 @@ int parser_counter(FILE *fp, s21_object *object) {
 void object_parser(FILE *fp, s21_object *object, s21_vertex *vertex,
                    int num_of_vert) {
   setlocale(LC_NUMERIC, "C");
-  vertex = malloc(num_of_vert * sizeof(s21_vertex));
+  vertex = (s21_vertex *)malloc(num_of_vert * sizeof(s21_vertex));
   object->polygons = malloc(object->num_of_polygons * sizeof(s21_polygon));
   for (int i = 0; i < object->num_of_polygons; i++) {
     object->polygons[i].vertices = malloc(POLYGON_SIZE * sizeof(s21_vertex));
@@ -54,5 +54,10 @@ void object_parser(FILE *fp, s21_object *object, s21_vertex *vertex,
       }
     }
   }
+  free(vertex);
+  for (int i = 0; i < object->num_of_polygons; i++) {
+    free(object->polygons[i].vertices);
+  }
+  free(object->polygons);
   fclose(fp);
 }

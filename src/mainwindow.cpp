@@ -51,11 +51,13 @@ MainWindow::MainWindow(QWidget *parent)
   object = new Qt3DCore::QEntity(parentWin);
   // открытие файла и его загрузка
   open_object_file(view, lineEdit, button);
-  QPushButton *saveModelButton = new QPushButton("Save model render", this);
-  layout->addWidget(saveModelButton);
-  connect(saveModelButton, &QPushButton::clicked, this,
-          [=]() { image_render(); });
-  settingsWin = new SettingsWindow(this, parentWin);
+  if (load_flag) {
+    QPushButton *saveModelButton = new QPushButton("Save model render", this);
+    layout->addWidget(saveModelButton);
+    connect(saveModelButton, &QPushButton::clicked, this,
+            [=]() { image_render(); });
+    settingsWin = new SettingsWindow(this);
+  }
 }
 
 void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
@@ -76,13 +78,14 @@ void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
           Qt3DRender::QGeometryRenderer::Lines);  // Установка режима
                                                   // отображения каркаса
       settingsWin->load_settings(&re_settings, cameraObj, mesh, view, object,
-                                 line_material, parentWin, objInfo);
+                                 line_material);
       object->addComponent(mesh);
       transform = new Qt3DCore::QTransform();
       object->addComponent(transform);
       const char *charstring = qPrintable(filename);
       objInfo = start_parsing(charstring);
-      settings(view, objInfo);
+      settings(view);
+      load_flag = true;
     }
   });
 }
@@ -108,7 +111,7 @@ void MainWindow::object_info(s21_object object, const char *filename) {
   layout->addWidget(polygonsLabel);
 }
 
-void MainWindow::settings(Qt3DExtras::Qt3DWindow *view, s21_object objInfo) {
+void MainWindow::settings(Qt3DExtras::Qt3DWindow *view) {
   layout->addWidget(settingsButton);
   connect(settingsButton, &QPushButton::clicked, this, [=]() {
     if (!settings_flag) {
@@ -120,7 +123,6 @@ void MainWindow::settings(Qt3DExtras::Qt3DWindow *view, s21_object objInfo) {
       settingsWin->line_color_settings(object, line_material);
       settingsWin->line_type_settings(mesh);
       settingsWin->background_settings(view);
-      settingsWin->point_settings(parentWin, objInfo);
       settings_flag = true;
     } else {
       settingsWin->show();

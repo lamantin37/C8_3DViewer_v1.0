@@ -16,9 +16,6 @@
 #include <Qt3DRender>
 
 #include "auxiliary_modules.h"
-#define NONE 0
-#define CIRCLE 1
-#define SQUARE 2
 
 #define ROTATE_MACRO(SLIDER, LINE_EDIT, ROTATION)             \
   connect(SLIDER, &QSlider::valueChanged, this, [=]() {       \
@@ -53,8 +50,7 @@
 class SettingsWindow : public QWidget {
   Q_OBJECT
  public:
-  explicit SettingsWindow(QWidget *parent = nullptr,
-                          Qt3DCore::QEntity *parentWin = nullptr);
+  explicit SettingsWindow(QWidget *parent = nullptr);
   void add_move_sliders(Qt3DCore::QTransform *);
   void add_rotate_sliders(Qt3DCore::QTransform *);
   void add_scale_slider(Qt3DRender::QCamera *cameraObj);
@@ -63,19 +59,12 @@ class SettingsWindow : public QWidget {
   void line_color_settings(Qt3DCore::QEntity *,
                            Qt3DExtras::QDiffuseSpecularMaterial *);
   void background_settings(Qt3DExtras::Qt3DWindow *);
-  void circle_point(Qt3DCore::QEntity *, s21_object, float);
-  void square_point(Qt3DCore::QEntity *, s21_object, float);
-  void colorize_point(Qt3DCore::QEntity *parentWin, QColor color);
-  void point_settings(Qt3DCore::QEntity *, s21_object);
-  void removePoints(Qt3DCore::QEntity *parentWin);
   void save_settings(QSettings *, Qt3DRender::QCamera *, Qt3DRender::QMesh *,
                      Qt3DExtras::QDiffuseSpecularMaterial *,
                      Qt3DExtras::Qt3DWindow *);
   void load_settings(QSettings *, Qt3DRender::QCamera *, Qt3DRender::QMesh *,
                      Qt3DExtras::Qt3DWindow *, Qt3DCore::QEntity *,
-                     Qt3DExtras::QDiffuseSpecularMaterial *,
-                     Qt3DCore::QEntity *parentWin, s21_object objInf);
-  void onRadiusReturnPressed(Qt3DCore::QEntity *parentWin, s21_object objInf);
+                     Qt3DExtras::QDiffuseSpecularMaterial *);
 
  private:
   QLabel *label;
@@ -111,15 +100,9 @@ class SettingsWindow : public QWidget {
   QPushButton *lineColor = nullptr;
   QPushButton *lineType = nullptr;
   QPushButton *pointType = nullptr;
-  QList<Qt3DCore::QEntity *> pointEntities;
-  QPushButton *pointColor = nullptr;
-  QColor currentColor = QColor(Qt::black);
   QColor background_color;
   QColor line_color;
   QColor point_color;
-  int point_type;
-  QLineEdit *lineEditRadius = nullptr;
-  float radius;
   QLabel *typeLabel = nullptr;
   QRadioButton *lineTypeRadioButton = nullptr;
   QRadioButton *dotTypeRadioButton = nullptr;

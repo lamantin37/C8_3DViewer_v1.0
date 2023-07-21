@@ -45,13 +45,13 @@ pro:
 	${QMAKE_PATH} -o ./build/qMakefile
 	cd build
 
-install: pro
+install: clean pro
 	$(info                                         )
 	$(info ----------------------------------------)
 	$(info Install the project                     )
 	$(info ----------------------------------------)
 	cd build/ && make -f qMakefile
-	cd ..${BUILD_SRC} && ./3DViewer
+	cd build/ && ./3DViewer
 
 uninstall:
 	$(info                                         )
@@ -113,4 +113,4 @@ clean:
 	-rm -rf qMakefile
 	-rm -rf ./build
 	-rm -rf Archive_3DViewer_v1.0.tgz
-.PHONY: all install uninstall clean dvi dist
+	-rm -rf tests

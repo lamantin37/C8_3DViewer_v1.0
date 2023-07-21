@@ -29,9 +29,9 @@ class MainWindow : public QMainWindow {
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
   void open_object_file(Qt3DExtras::Qt3DWindow *, QLineEdit *,
-                        QPushButton *);                 //
-  void object_info(s21_object, const char *);           //
-  void settings(Qt3DExtras::Qt3DWindow *, s21_object);  //
+                        QPushButton *);        //
+  void object_info(s21_object, const char *);  //
+  void settings(Qt3DExtras::Qt3DWindow *);     //
 
   s21_object start_parsing(const char *);
   void image_render();
@@ -60,5 +60,6 @@ class MainWindow : public QMainWindow {
   QLabel *polygonsLabel = nullptr;
   QString prevModel;
   bool settings_flag = false;
+  bool load_flag = false;
 };
 #endif  // MAINWINDOW_H

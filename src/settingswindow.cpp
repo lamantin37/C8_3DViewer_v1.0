@@ -1,7 +1,6 @@
 #include "settingswindow.h"
 
-SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QEntity *parentWin)
-    : QWidget(parent) {
+SettingsWindow::SettingsWindow(QWidget *parent) : QWidget(parent) {
   setWindowFlags(Qt::Window);
   setFixedSize(QSize(400, 600));
   layout = new QVBoxLayout();
@@ -37,17 +36,11 @@ SettingsWindow::SettingsWindow(QWidget *parent, Qt3DCore::QEntity *parentWin)
   scaleEdit->setValidator(new QDoubleValidator(this));
 
   backgroundColor = new QPushButton("Change background color", this);
-  pointColor = new QPushButton("Change point color", this);
   lineColor = new QPushButton("Change line color", this);
   background_color = QColor(Qt::white);
   line_color = QColor(Qt::black);
   point_color = QColor(Qt::black);
 
-  point_type = NONE;
-  point_material = new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
-  lineEditRadius = new QLineEdit("Set radius", this);
-  lineEditRadius->setValidator(new QDoubleValidator(this));
-  radius = 0.03;
   setLayout(layout);
 }
 
@@ -76,11 +69,6 @@ void SettingsWindow::save_settings(
   if (line_material->ambient() != QColor(Qt::black))
     line_clr = line_material->ambient();
   setts->setValue("line material", line_clr.name());
-  //  setts->setValue("point type", point_type);
-  QColor point_clr = QColor(Qt::black);
-  if (point_material->ambient() != QColor(Qt::black))
-    point_clr = point_material->ambient();
-  setts->setValue("point material", point_clr.name());
   QColor backgroundColor = view->defaultFrameGraph()->clearColor();
   setts->setValue("background color", backgroundColor.name());
   setts->sync();
@@ -89,8 +77,7 @@ void SettingsWindow::save_settings(
 void SettingsWindow::load_settings(
     QSettings *setts, Qt3DRender::QCamera *cameraObj, Qt3DRender::QMesh *mesh,
     Qt3DExtras::Qt3DWindow *view, Qt3DCore::QEntity *object,
-    Qt3DExtras::QDiffuseSpecularMaterial *line_material,
-    Qt3DCore::QEntity *parentWin, s21_object objInf) {
+    Qt3DExtras::QDiffuseSpecularMaterial *line_material) {
   QString projection = setts->value("projection").toString();
   if (projection == "parallel") {
     float aspectRatio = float(view->width()) / view->height();
@@ -110,22 +97,6 @@ void SettingsWindow::load_settings(
   QColor lineMaterial(setts->value("line material").toString());
   line_material->setAmbient(lineMaterial);
   object->addComponent(line_material);
-  int loaded_point_type = setts->value("point type").toInt();
-  float radius = 0.03;
-  if (loaded_point_type == NONE) {
-    qDeleteAll(pointEntities);
-    pointEntities.clear();
-  } else if (loaded_point_type == CIRCLE) {
-    qDeleteAll(pointEntities);
-    pointEntities.clear();
-    circle_point(parentWin, objInf, radius);
-  } else if (loaded_point_type == SQUARE) {
-    qDeleteAll(pointEntities);
-    pointEntities.clear();
-    square_point(parentWin, objInf, radius);
-  }
-  QColor pointMaterial(setts->value("point material").toString());
-  colorize_point(parentWin, pointMaterial);
   QColor backgroundColor(setts->value("background color").toString());
   view->defaultFrameGraph()->setClearColor(backgroundColor);
   setts->sync();
@@ -234,13 +205,13 @@ void SettingsWindow::projection_settings(Qt3DRender::QCamera *cameraObj,
   layout->addLayout(hLayout);
   connect(parallelProjectionRadioButton, &QRadioButton::clicked, this, [=]() {
     float aspectRatio = float(view->width()) / view->height();
-    cameraObj->lens()->setPerspectiveProjection(45.0f, aspectRatio, 0.1f,
-                                                10000.0f);
+    cameraObj->lens()->setOrthographicProjection(-aspectRatio, aspectRatio,
+                                                 -1.0, 1.0, 0.1f, 10000.0f);
   });
   connect(centralProjectionRadioButton, &QRadioButton::clicked, this, [=]() {
     float aspectRatio = float(view->width()) / view->height();
-    cameraObj->lens()->setOrthographicProjection(-aspectRatio, aspectRatio,
-                                                 -1.0, 1.0, 0.1f, 10000.0f);
+    cameraObj->lens()->setPerspectiveProjection(45.0f, aspectRatio, 0.1f,
+                                                10000.0f);
   });
 }
 
@@ -283,127 +254,4 @@ void SettingsWindow::background_settings(Qt3DExtras::Qt3DWindow *view) {
       view->defaultFrameGraph()->setClearColor(QColor(background_color));
     }
   });
-}
-
-void SettingsWindow::point_settings(Qt3DCore::QEntity *parentWin,
-                                    s21_object objInf) {
-  QLabel *typeLabel = new QLabel("Select point type:", this);
-  QRadioButton *noneTypeRadioButton = new QRadioButton("None", this);
-  QRadioButton *circleTypeRadioButton = new QRadioButton("Circle", this);
-  QRadioButton *squareTypeRadioButton = new QRadioButton("Square", this);
-  QHBoxLayout *hLayout = new QHBoxLayout();
-  hLayout->addWidget(noneTypeRadioButton);
-  hLayout->addWidget(circleTypeRadioButton);
-  hLayout->addWidget(squareTypeRadioButton);
-  layout->addWidget(typeLabel);
-  layout->addLayout(hLayout);
-  layout->addWidget(lineEditRadius);
-  connect(lineEditRadius, &QLineEdit::returnPressed, this,
-          [=]() { onRadiusReturnPressed(parentWin, objInf); });
-  connect(noneTypeRadioButton, &QRadioButton::clicked, this, [=]() {
-    point_type = NONE;
-    qDeleteAll(pointEntities);
-    pointEntities.clear();
-  });
-  connect(circleTypeRadioButton, &QRadioButton::clicked, this, [=]() {
-    point_type = CIRCLE;
-    qDeleteAll(pointEntities);
-    pointEntities.clear();
-    circle_point(parentWin, objInf, radius);
-  });
-  connect(squareTypeRadioButton, &QRadioButton::clicked, this, [=]() {
-    point_type = SQUARE;
-    qDeleteAll(pointEntities);
-    pointEntities.clear();
-    square_point(parentWin, objInf, radius);
-  });
-  layout->addWidget(pointColor);
-  connect(pointColor, &QPushButton::clicked, this, [=]() {
-    point_color = QColorDialog::getColor(Qt::white, this, "Choose point color");
-    colorize_point(parentWin, point_color);
-  });
-}
-
-void SettingsWindow::onRadiusReturnPressed(Qt3DCore::QEntity *parentWin,
-                                           s21_object objInf) {
-  radius = lineEditRadius->text().toFloat();
-  if (point_type == CIRCLE) {
-    qDeleteAll(pointEntities);
-    pointEntities.clear();
-    circle_point(parentWin, objInf, radius);
-  } else if (point_type == SQUARE) {
-    qDeleteAll(pointEntities);
-    pointEntities.clear();
-    square_point(parentWin, objInf, radius);
-  }
-}
-
-void SettingsWindow::colorize_point(Qt3DCore::QEntity *parentWin,
-                                    QColor color) {
-  if (color.isValid()) {
-    for (auto &entity : pointEntities) {
-      Qt3DExtras::QDiffuseSpecularMaterial *point_material =
-          new Qt3DExtras::QDiffuseSpecularMaterial(parentWin);
-      point_material->setAmbient(color);
-      entity->addComponent(point_material);
-    }
-  }
-}
-
-void SettingsWindow::circle_point(Qt3DCore::QEntity *parentWin,
-                                  s21_object object, float radius) {
-  for (int i = 0; i < object.num_of_polygons; i++) {
-    for (int j = 0; j < POLYGON_SIZE; j++) {
-      Qt3DExtras::QCylinderMesh *circleMesh =
-          new Qt3DExtras::QCylinderMesh(parentWin);
-      circleMesh->setRadius(radius);
-      circleMesh->setLength(0);
-
-      Qt3DCore::QTransform *sphere_transform =
-          new Qt3DCore::QTransform(parentWin);
-      float xpos = object.polygons[i].vertices[j].x;
-      float ypos = object.polygons[i].vertices[j].y;
-      float zpos = object.polygons[i].vertices[j].z;
-      sphere_transform->setTranslation(QVector3D(xpos, ypos, zpos));
-
-      Qt3DExtras::QPhongMaterial *sphere_material =
-          new Qt3DExtras::QPhongMaterial(parentWin);
-
-      Qt3DCore::QEntity *sphereEntity = new Qt3DCore::QEntity(parentWin);
-      sphereEntity->addComponent(circleMesh);
-      sphereEntity->addComponent(sphere_transform);
-      sphereEntity->addComponent(sphere_material);
-
-      pointEntities.append(sphereEntity);
-    }
-  }
-}
-
-void SettingsWindow::square_point(Qt3DCore::QEntity *parentWin,
-                                  s21_object object, float side) {
-  for (int i = 0; i < object.num_of_polygons; i++) {
-    for (int j = 0; j < POLYGON_SIZE; j++) {
-      Qt3DExtras::QPlaneMesh *squareMesh =
-          new Qt3DExtras::QPlaneMesh(parentWin);
-      squareMesh->setWidth(side);
-      squareMesh->setHeight(side);
-
-      Qt3DCore::QTransform *square_transform =
-          new Qt3DCore::QTransform(parentWin);
-      float xpos = object.polygons[i].vertices[j].x;
-      float ypos = object.polygons[i].vertices[j].y;
-      float zpos = object.polygons[i].vertices[j].z;
-      square_transform->setTranslation(QVector3D(xpos, ypos, zpos));
-
-      Qt3DExtras::QPhongMaterial *sphere_material =
-          new Qt3DExtras::QPhongMaterial(parentWin);
-
-      Qt3DCore::QEntity *squareEntity = new Qt3DCore::QEntity(parentWin);
-      squareEntity->addComponent(squareMesh);
-      squareEntity->addComponent(square_transform);
-      squareEntity->addComponent(sphere_material);
-
-      pointEntities.append(squareEntity);
-    }
-  }
 }
