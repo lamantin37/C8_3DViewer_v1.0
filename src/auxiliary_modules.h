@@ -44,7 +44,4 @@ void rotate(float, float, float, matrix_t *, matrix_t *);
 
 void scale(float, float, float, matrix_t *, matrix_t *);
 
-// int parser_counter(FILE *, s21_object *);
-// void object_parser(FILE *, s21_object *, s21_vertex *,
-//                    int);
 #endif  // AUXILIARY_MODULES_H

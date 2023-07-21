@@ -4,6 +4,9 @@
 
 #include "auxiliary_modules.h"
 
+int parser_counter(FILE*, s21_object*);
+void object_parser(FILE*, s21_object*, s21_vertex*, int);
+
 START_TEST(test_parser1) {
   FILE* fp;
   int num_of_vert = 0;
