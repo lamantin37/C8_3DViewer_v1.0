@@ -51,13 +51,11 @@ MainWindow::MainWindow(QWidget *parent)
   object = new Qt3DCore::QEntity(parentWin);
   // открытие файла и его загрузка
   open_object_file(view, lineEdit, button);
-  if (load_flag) {
-    QPushButton *saveModelButton = new QPushButton("Save model render", this);
-    layout->addWidget(saveModelButton);
-    connect(saveModelButton, &QPushButton::clicked, this,
-            [=]() { image_render(); });
-    settingsWin = new SettingsWindow(this);
-  }
+  QPushButton *saveModelButton = new QPushButton("Save model render", this);
+  layout->addWidget(saveModelButton);
+  connect(saveModelButton, &QPushButton::clicked, this,
+          [=]() { image_render(); });
+  settingsWin = new SettingsWindow(this);
 }
 
 void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
@@ -85,7 +83,6 @@ void MainWindow::open_object_file(Qt3DExtras::Qt3DWindow *view,
       const char *charstring = qPrintable(filename);
       objInfo = start_parsing(charstring);
       settings(view);
-      load_flag = true;
     }
   });
 }

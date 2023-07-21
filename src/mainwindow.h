@@ -60,6 +60,5 @@ class MainWindow : public QMainWindow {
   QLabel *polygonsLabel = nullptr;
   QString prevModel;
   bool settings_flag = false;
-  bool load_flag = false;
 };
 #endif  // MAINWINDOW_H
